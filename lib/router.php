@@ -89,6 +89,10 @@ Class Router {
     $this->registerRoute("DELETE",$pattern,$callback);
   }
 
+  public function patch($pattern,$callback) {
+    $this->registerRoute("PATCH",$pattern,$callback);
+  }
+
   /**
    * sets the asset folder for static content.
    * Also, sets the Content-Type header for the resulting content 
@@ -98,7 +102,7 @@ Class Router {
    */
   public function assets($path="public") {
     syslog(LOG_INFO,$this->my_name.": Setting assets path to: {$path}");
-    $regex = '/^\\/('.$path.')\\/(.*)/';
+    $regex = '/^('.$path.')\\/(.*)/';
     $this->registerRoute("GET",$regex,function($matches) {
       $fileParts = explode(".",$matches[2]);
       $fileExtension = array_pop($fileParts);

@@ -1,4 +1,4 @@
 </body>
-<!-- <script src="/public/js/reports.js"></script> -->
-<script src="/public/js/phpht.js"></script>
+<script src="/froogle/public/js/froogle.js"></script>
+<script src="/froogle/public/js/forms.js"></script>
 </html>

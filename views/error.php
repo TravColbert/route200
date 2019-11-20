@@ -1,15 +1,16 @@
-<style>
-body, div {
-  display: flex;
-}
-</style>
-<div>
-  <div class="messageholder">
-    <div class="header">
-      Error:
-    </div>
-    <div class="error">
-      <?php echo $error; ?>
-    </div>
+<div class="bigbanner">
+  <div class="welcome">
+    phpht
+  </div>
+</div>
+  <div class="error">
+    <?php
+    if(isset($data["error"])) {
+      foreach($data["error"] as $errorMessage)
+      echo "<div class='error'>".$errorMessage."</div>";
+    } else {
+      echo "an error occured"; 
+    } 
+    ?>
   </div>
 </div>

@@ -5,45 +5,27 @@ Class Phpht {
     $this->appname = (isset($config["appname"])) ? $config["appname"] : "PHPHT - Unconfigured";
     $this->views = (isset($config["views"])) ? $config["views"] : "views";
     $this->assets = (isset($config["assets"])) ? $config["assets"] : "assets";
-    $this->home = (isset($config["home"])) ? $config["home"] : "homepage.php";
+    $this->home = (isset($config["home"])) ? $config["home"] : "home.php";
+    $this->baseurl = (isset($config["baseurl"])) ? $config["baseurl"] : "";
   }
 
   public function importModule($moduleClass,$moduleName) {
     $this->modules[$moduleName] = $moduleClass;
   }
   
-  public function showServerInfo() {
+  public function viewInfo() {
     global $router;
     syslog(LOG_INFO,"Showing server info phpinfo()");
-    phpinfo();
-    echo "<div class='center'>";
-    echo "<hr>";
-    echo "<h1>PHPHT INFO</h1>";
-    echo "<table><tbody><tr>";
-    echo "<td class='e'>URL_BASE</td><td class='v'>".$router->getUrlBase()."</td>";
-    echo "<tr></tbody></table>";
-    echo "<h2>Routes</h2>";
-    echo "<table><tbody>";
-    foreach($router->getRoutes() as $routeVerb=>$routeVerbRoutes) {
-      echo "<tr>";
-      echo "<td class='e'>".$routeVerb."</td>";
-      echo "<td class='v'>";
-      foreach($routeVerbRoutes as $route) {
-        echo $route[0]."<br>";
-      }
-      echo "</td></tr>";
-    }
-    echo "</tbody></table>";
-    echo "</div>";
+    return $this->view("info.php");
   }
 
-  public function diag($matches) {
+  public function viewDiag($matches) {
     global $db;
     echo "<pre>";
     if($db) {
       echo "DB connection client version: ".$db->getAttribute(PDO::ATTR_CLIENT_VERSION)."\n";
-      $connectionStatus = ($db->getAttribute(PDO::ATTR_CONNECTION_STATUS)) ? "true" : "false";
-      echo "DB connection status: {$connectionStatus}\n";
+      // $connectionStatus = ($db->getAttribute(PDO::ATTR_CONNECTION_STATUS)) ? "true" : "false";
+      // echo "DB connection status: {$connectionStatus}\n";
     }
     echo "URL Handler-checker\n";
     echo "Matches:\n";
@@ -61,39 +43,61 @@ Class Phpht {
     echo "</pre>";
   }
   
-  public function showHelp() {
-    $this->view("help.php");
+  public function asJSON($data) {
+    header('Content-Type: application/json;charset=utf-8');
+    if(isset($data["response_code"]) && $data["response_code"]) {
+      http_response_code($data["response_code"]);
+    }
+    $jsonString = json_encode($data);
+    // syslog(LOG_INFO,"JSON STRING: ".$jsonString);
+    echo $jsonString;
   }
   
-  public function show404() {
+  public function viewHelp() {
+    return $this->view("help.php");
+  }
+  
+  public function view404() {
     $data = array(
       'pageTitle' => "4 oh 4",
-      'error' => "404 - page not found"
+      'errors' => array("404 - page not found")
     );
     http_response_code(404);
-    $this->view("404.php",$data);
+    return $this->view("404.php",$data);
     exit;
   }
 
-  public function view($template=null,$data=null) {
+  public function redirectTo($url) {
+    syslog(LOG_INFO,"Redirecting to: $url");
+    header("Location: $url");
+  }
+  
+  public function view($template=null,$data=[]) {
+    global $auth;
     $template = (isset($template)) ? $template : $this->home;
     if(file_exists($this->views."/".$template)) {
       $pageTitle = $this->appname;
       if($data) {
         if(array_key_exists("pageTitle",$data)) $pageTitle = $data['pageTitle'];
-        if(array_key_exists("error",$data)) $error = $data['error'];
       }
+      $data["appname"] = $this->appname;
       include($this->views."/head.php");
+      include($this->views."/navbar.php");
       include($this->views."/".$template);
       include($this->views."/foot.php");
     } else {
-      $this->show404();
+      return $this->view404();
     }
   }
-  
+
+  public function getFavicon($matches) {
+    syslog(LOG_INFO,"Skipping favicon");
+    return true;
+  }
+
   public function getModelHome($matches) {
     global ${$matches[1]};
-    if(!is_a(${$matches[1]},"PHPHTModel")) return $this->show404();
+    if(!is_a(${$matches[1]},"PHPHTModel")) return $this->view404();
     $reportName = ($matches[1]) ? $matches[1] : null;
     syslog(LOG_INFO,"getModelHome(): ".$_SERVER['QUERY_STRING']);
     $this->view(null,array(
@@ -120,13 +124,14 @@ function viewAsJSON($objType,$objs,$errors) {
   echo $returnObj;
 }
 
-function asJSON($data) {
-  // var_dump($data);
-  header('Content-Type: application/json');
-  $jsonString = json_encode($data);
-  // var_dump($jsonString);
-  // syslog(LOG_DEBUG,"JSON string: ".$jsonString." length: ".strlen($jsonString));
-  return $jsonString;
+function setMessages($type,$data) {
+  echo "<div id=\"${type}box\" class='messagebox $type vertical'>";
+  if(isset($data[$type])) {
+    foreach($data[$type] as $msg) {
+      echo "<div class='msg'>".$msg."</div>";
+    }
+  }  
+  echo "</div>";
 }
 
 function toJSON($matches) {
@@ -135,11 +140,6 @@ function toJSON($matches) {
   $id = (count($matches)>=3) ? $matches[2] : null;
   echo ${$matches[1]}->toJSON($id);
   return;
-}
-
-function logout() {
-  global $phpht;
-  $phpht->logout($_SERVER);
 }
 
 function setupNewObject($matches) {
