@@ -4,11 +4,9 @@ openlog((isset($config["appname"])) ? $config["appname"] : "phpht", LOG_PID, LOG
 
 require __DIR__ . '/vendor/autoload.php';
 
-$db = new \PDO('sqlite:db/froogle.db');
-
 // Set up PHPHT first:
 require_once("lib/phpht.php");
-$phpht = new Phpht($config, $db);
+$phpht = new Phpht($config);
 require_once("lib/Router.php");
 $router = new Router();
 

@@ -2,14 +2,20 @@
 Class Phpht {
   private $auth;
 
-  function __construct($config, $db) {
+  function __construct($config) {
     $this->appname = (isset($config["appname"])) ? $config["appname"] : "PHPHT - Unconfigured";
     $this->views = (isset($config["views"])) ? $config["views"] : "views";
     $this->assets = (isset($config["assets"])) ? $config["assets"] : "assets";
     $this->home = (isset($config["home"])) ? $config["home"] : "home.php";
     $this->baseurl = (isset($config["baseurl"])) ? $config["baseurl"] : "";
-    $this->db = $db;
+    $this->db = $this->buildDB($config);
     $this->auth = new \Delight\Auth\Auth($db);
+  }
+
+  private function buildDB($config) {
+    $dbtype = (isset($config["dbtype"])) ? $config["dbtype"] : "sqlite";
+    $dblocation = (isset($config["dblocation"])) ? $config["dblocation"] : "db/phpht.db";
+    return new \PDO("${dbtype}:${dblocation}");
   }
 
   public function importModule($moduleClass,$moduleName) {
