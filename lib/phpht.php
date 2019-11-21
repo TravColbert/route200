@@ -12,11 +12,43 @@ Class Phpht {
   public function importModule($moduleClass,$moduleName) {
     $this->modules[$moduleName] = $moduleClass;
   }
-  
-  public function viewInfo() {
-    global $router;
-    syslog(LOG_INFO,"Showing server info phpinfo()");
-    return $this->view("info.php");
+    
+  public function asJSON($data) {
+    header('Content-Type: application/json;charset=utf-8');
+    if(isset($data["response_code"]) && $data["response_code"]) {
+      http_response_code($data["response_code"]);
+    }
+    $jsonString = json_encode($data);
+    // syslog(LOG_INFO,"JSON STRING: ".$jsonString);
+    echo $jsonString;
+  }
+
+  public function view($template=null,$data=[]) {
+    global $auth;
+    $template = (isset($template)) ? $template : $this->home;
+    if(!file_exists($this->views."/".$template)) {
+      return $this->view404($this->views."/".$template);
+    }
+    $pageTitle = $this->appname;
+    if($data) {
+      if(array_key_exists("pageTitle",$data)) $pageTitle = $data['pageTitle'];
+    }
+    $data["appname"] = $this->appname;
+    include($this->views."/head.php");
+    include($this->views."/navbar.php");
+    include($this->views."/".$template);
+    include($this->views."/foot.php");
+  }
+
+  public function view404($page) {
+    syslog(LOG_INFO, "page: ${page} not found");
+    $data = array(
+      'pageTitle' => "4 oh 4",
+      'errors' => array("404 - page not found")
+    );
+    http_response_code(404);
+    return $this->view("404.php",$data);
+    exit;
   }
 
   public function viewDiag($matches) {
@@ -42,29 +74,15 @@ Class Phpht {
     var_dump($_SERVER['QUERY_STRING']);
     echo "</pre>";
   }
-  
-  public function asJSON($data) {
-    header('Content-Type: application/json;charset=utf-8');
-    if(isset($data["response_code"]) && $data["response_code"]) {
-      http_response_code($data["response_code"]);
-    }
-    $jsonString = json_encode($data);
-    // syslog(LOG_INFO,"JSON STRING: ".$jsonString);
-    echo $jsonString;
-  }
-  
+
   public function viewHelp() {
     return $this->view("help.php");
   }
-  
-  public function view404() {
-    $data = array(
-      'pageTitle' => "4 oh 4",
-      'errors' => array("404 - page not found")
-    );
-    http_response_code(404);
-    return $this->view("404.php",$data);
-    exit;
+
+  public function viewInfo() {
+    global $router;
+    syslog(LOG_INFO,"Showing server info phpinfo()");
+    return $this->view("info.php");
   }
 
   public function redirectTo($url) {
@@ -72,24 +90,6 @@ Class Phpht {
     header("Location: $url");
   }
   
-  public function view($template=null,$data=[]) {
-    global $auth;
-    $template = (isset($template)) ? $template : $this->home;
-    if(file_exists($this->views."/".$template)) {
-      $pageTitle = $this->appname;
-      if($data) {
-        if(array_key_exists("pageTitle",$data)) $pageTitle = $data['pageTitle'];
-      }
-      $data["appname"] = $this->appname;
-      include($this->views."/head.php");
-      include($this->views."/navbar.php");
-      include($this->views."/".$template);
-      include($this->views."/foot.php");
-    } else {
-      return $this->view404();
-    }
-  }
-
   public function getFavicon($matches) {
     syslog(LOG_INFO,"Skipping favicon");
     return true;
