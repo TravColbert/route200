@@ -21,7 +21,7 @@ Class Phpht {
   public function importModule($moduleClass,$moduleName) {
     $this->modules[$moduleName] = $moduleClass;
   }
-    
+
   public function asJSON($data) {
     header('Content-Type: application/json;charset=utf-8');
     if(isset($data["response_code"]) && $data["response_code"]) {
