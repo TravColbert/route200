@@ -2,9 +2,13 @@
 $config = parse_ini_file("./config/config.ini");
 openlog((isset($config["appname"])) ? $config["appname"] : "phpht", LOG_PID, LOG_SYSLOG);
 
+require __DIR__ . '/vendor/autoload.php';
+
+$db = new \PDO('sqlite:db/froogle.db');
+
 // Set up PHPHT first:
 require_once("lib/phpht.php");
-$phpht = new Phpht($config);
+$phpht = new Phpht($config, $db);
 require_once("lib/Router.php");
 $router = new Router();
 

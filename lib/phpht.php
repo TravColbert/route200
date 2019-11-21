@@ -1,12 +1,15 @@
 <?php
 Class Phpht {
+  private $auth;
 
-  function __construct($config) {
+  function __construct($config, $db) {
     $this->appname = (isset($config["appname"])) ? $config["appname"] : "PHPHT - Unconfigured";
     $this->views = (isset($config["views"])) ? $config["views"] : "views";
     $this->assets = (isset($config["assets"])) ? $config["assets"] : "assets";
     $this->home = (isset($config["home"])) ? $config["home"] : "home.php";
     $this->baseurl = (isset($config["baseurl"])) ? $config["baseurl"] : "";
+    $this->db = $db;
+    $this->auth = new \Delight\Auth\Auth($db);
   }
 
   public function importModule($moduleClass,$moduleName) {
