@@ -15,6 +15,7 @@ Class Phpht {
   private function buildDB($config) {
     $dbtype = (isset($config["dbtype"])) ? $config["dbtype"] : "sqlite";
     $dblocation = (isset($config["dblocation"])) ? $config["dblocation"] : "db/phpht.db";
+    if(!file_exists($dblocation)) return null;
     return new \PDO("${dbtype}:${dblocation}");
   }
 
