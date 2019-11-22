@@ -9,7 +9,7 @@ Class Phpht {
     $this->home = (isset($config["home"])) ? $config["home"] : "home.php";
     $this->baseurl = (isset($config["baseurl"])) ? $config["baseurl"] : "";
     $this->db = $this->buildDB($config);
-    $this->auth = new \Delight\Auth\Auth($db);
+    if($this->db) $this->auth = new \Delight\Auth\Auth($db);
   }
 
   private function buildDB($config) {
@@ -45,7 +45,7 @@ Class Phpht {
     }
     $data["appname"] = $this->appname;
     include($this->views."/head.php");
-    include($this->views."/navbar.php");
+    if(file_exists($this->views."/navbar.php")) include($this->views."/navbar.php");
     include($this->views."/".$template);
     include($this->views."/foot.php");
   }

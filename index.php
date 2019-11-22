@@ -7,7 +7,7 @@ require __DIR__ . '/vendor/autoload.php';
 // Set up PHPHT first:
 require_once("lib/phpht.php");
 $phpht = new Phpht($config);
-require_once("lib/Router.php");
+require_once("lib/router.php");
 $router = new Router();
 
 // Setup what folder your static assets are pulled from (e.g. 'public')

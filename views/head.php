@@ -11,7 +11,7 @@
   <link rel="stylesheet" type="text/css" media="screen" href="/froogle/public/css/froogle.css">
 </head>
 <?php
-if(!$phpht->auth->isLoggedIn()) {
+if($this->auth && !$this->auth->isLoggedIn()) {
 ?>
 <body class="backgroundsplash">
 <?php
