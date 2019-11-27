@@ -1,7 +1,5 @@
 <?php
-if($auth->isLoggedIn()) {
-  global $router;
-  phpinfo();
+phpinfo();
 ?>
 <div class='center'>
   <hr>
@@ -9,7 +7,7 @@ if($auth->isLoggedIn()) {
   <table>
     <tbody>
       <tr>
-        <td class='e'>URL_BASE</td><td class='v'><?php echo $router->getUrlBase() ?></td>
+        <td class='e'>URL_BASE</td><td class='v'><?php echo $this->router->getUrlBase() ?></td>
       <tr>
     </tbody>
   </table>
@@ -17,7 +15,7 @@ if($auth->isLoggedIn()) {
   <table>
     <tbody>
 <?php
-    foreach($router->getRoutes() as $routeVerb=>$routeVerbRoutes) {
+    foreach($this->router->getRoutes() as $routeVerb=>$routeVerbRoutes) {
 ?>
       <tr>
         <td class='e'><?php echo $routeVerb ?></td>
@@ -34,8 +32,15 @@ if($auth->isLoggedIn()) {
 ?>
     </tbody>
   </table>
-</div>
+  <table>
+    <tbody>
+      <tr>
+        <td class='e'>Assets</td>
+        <td class='v'>
 <?php
-} else {
-  echo "Must authenticate before showing info";
-}
+      echo $this->assets."<br>";
+?>
+      </tr>
+    </tbody>
+  </table>
+</div>
