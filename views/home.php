@@ -12,7 +12,7 @@
   </div>
   <div class="container wimpy">
     <div class="logobox">
-      <img id="coinslogo" src="/public/img/coins.png"/>
+      <img id="coinslogo" src="/public/img/phpht.png"/>
     </div>
   </div>
 </article>
