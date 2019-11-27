@@ -19,6 +19,7 @@ Class Router {
     } else {
       $this->urlBase = $urlBase;
     }
+    syslog(LOG_INFO,$this->my_name.": Final PHPHT Router URL base: '{$this->urlBase}'");
     $this->routes = array();
   }
 
@@ -102,7 +103,7 @@ Class Router {
    */
   public function assets($path="public") {
     syslog(LOG_INFO,$this->my_name.": Setting assets path to: {$path}");
-    $regex = '/^('.$path.')\\/(.*)/';
+    $regex = '/^\\/('.$path.')\\/(.*)/';
     $this->registerRoute("GET",$regex,function($matches) {
       $fileParts = explode(".",$matches[2]);
       $fileExtension = array_pop($fileParts);

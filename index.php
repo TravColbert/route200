@@ -4,14 +4,11 @@ openlog((isset($config["appname"])) ? $config["appname"] : "phpht", LOG_PID, LOG
 
 require __DIR__ . '/vendor/autoload.php';
 
-// Set up PHPHT first:
 require_once("lib/phpht.php");
 $phpht = new Phpht($config);
-require_once("lib/router.php");
-$router = new Router();
 
 // Setup what folder your static assets are pulled from (e.g. 'public')
-$router->assets();
+$phpht->router->assets();
 
 /**
  * Custom functions can go here
@@ -41,15 +38,15 @@ $my_model = new My_Model();
  * Once, all your model objects are created we can start defining
  * the routes that tie URL requests to PHPHT to methods.
  * 
- * Routes are defined with the $router object created above.
+ * Routes are defined with the $phpht->router object.
  * 
  * The format of a route definition is:
  * 
- * $router->verb(path_regex, function);
+ * $phpht->router->verb(path_regex, function);
  * 
  * like:
  * 
- * e.g.: $router->get("/^\\/_info\\/?/","showServerInfo");
+ * e.g.: $phpht->router->get("/^\\/_info\\/?/","showServerInfo");
  * 
  * where:
  * 
@@ -73,64 +70,57 @@ $my_model = new My_Model();
  * 'my.server/myapp' part of the URI does not need to be defined in 
  * the regex. The regex would look like this:
  * 
- * $router->get("/^\\/_info\\/?/","showServerInfo");
+ * $phpht->router->get("/^\\/_info\\/?/","showServerInfo");
  * 
  * The regex just catches: '/_info/'.
  * 
  * There is another form to the 'function' parameter where an array is
  * given like this:
  * 
- * $router->get("/^\\/_info\\/?/",array("phpht","showServerInfo"))
+ * $phpht->router->get("/^\\/_info\\/?/",array("phpht","showServerInfo"))
  * 
  * In this case, the first element of the array is an object and the 
- * second element is the method in the object. We often use this format 
+ * second element is a method in the object. We often use this format 
  * when using PHPHT's internal methods.
  */
-$router->get("/^\\/favicon\.ico/",function ($matches) {
-  syslog(LOG_INFO,"Skipping favicon");
-});
-$router->get("/^\\/_info\\/?/",array("phpht","showServerInfo"));
-$router->get("/^\\/(_diag)(\\/.+)*\\//",array("phpht","diag"));
-
-/**
- * If you have authentication and sessions set up you can use these
- * routes:
- *
-$router->get("/^\\/login\\/?/","login");
-$router->get("/^\\/logout\\/?/","logout");
- */
-
-/**
- * The default 404-handler route
- */
-$router->get("/^\\/404\\/?/",array("phpht","show404"));
+$phpht->router->get("/^favicon\.ico/",array($phpht,"getFavicon"));
+$phpht->router->get("/^\\/_info\\/?/",array($phpht,"viewInfo"));
+$phpht->router->get("/^\\/(_diag)(\\/.+)*\\//",array($phpht,"viewDiag"));
+$phpht->router->get("/^\\/404\\/?/",array($phpht,"view404"));
+$phpht->router->get("/^\\/login\\/?/",array($phpht,"goLogin"));
+$phpht->router->get("/^logout\\/?/",array($phpht,"goLogout"));
+$phpht->router->get("/^register\\/?/",array($phpht,"viewRegister"));
+$phpht->router->get("/^verify\\/?/",array($phpht,"goVerify"));
+$phpht->router->get("/^settings\\/?/",array($phpht,"goSettings"));
 
 /**
  * These are generic routes that work with basic, non-compound objects
  * As soon as you define them and create the model, they should Just Work
  */
-$router->get("/^\\/([^\\/]+)\\/new\\/?/","setupNewObject");
-$router->get("/^\\/([^\\/]+)\\/([0-9]+)\\/edit\\/?/","toForm");
-$router->get("/^\\/([^\\/]+)\\/([0-9]+)\\/?/","listItems");
-$router->get("/^\\/([^\\/]+)\\/(json)\\/?/","exportToJSON");
-$router->get("/^\\/([^\\/]+)\\/?/",array("phpht","getModelHome"));
+$phpht->router->get("/^\\/([^\\/]+)\\/new\\/?/","setupNewObject");
+$phpht->router->get("/^\\/([^\\/]+)\\/([0-9]+)\\/edit\\/?/","toForm");
+$phpht->router->get("/^\\/([^\\/]+)\\/([0-9]+)\\/?/","listItems");
+$phpht->router->get("/^\\/([^\\/]+)\\/(json)\\/?/","exportToJSON");
+$phpht->router->get("/^\\/([^\\/]+)\\/?/",array("phpht","getModelHome"));
 
-$router->post("/^\\/([^\\/]+)\\/([0-9]+)\\/?/","edit");
-$router->post("/^\\/([^\\/]+)\\/?$/","add");
+$phpht->router->post("/^register\\/?/",array($phpht,"postRegister"));
+$phpht->router->post("/^login\\/?/",array($phpht,"postLogin"));
+$phpht->router->post("/^\\/([^\\/]+)\\/([0-9]+)\\/?/","edit");
+$phpht->router->post("/^\\/([^\\/]+)\\/?$/","add");
 
-$router->delete("/^\\/([^\\/]+)\\/([0-9]+)\\/?/","delete");
+$phpht->router->delete("/^\\/([^\\/]+)\\/([0-9]+)\\/?/","delete");
 
 /**
  * THE ROOT ROUTE
  * 
  * This defines the root route: the front door to your app.
  */
-$router->get("/\\/?/",function($matches) {
+$phpht->router->get("/\\/?/",function($matches) {
   global $phpht;
-  $phpht->view("homepage.php",$matches);
+  $phpht->view($phpht->getVal("home"),$matches);
 });
 
 /**
  * Find and run the route!
  */
-$router->route();
+$phpht->router->route();

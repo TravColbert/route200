@@ -1,26 +1,21 @@
 <?php
 Class Phpht {
-  private $auth;
+  private $db = false;
+  private $auth = false;
+  public $router;
+  protected $config;
 
   function __construct($config) {
+    $this->config = $config;
+    require_once("lib/router.php");
+    $this->router = new Router();
     $this->appname = (isset($config["appname"])) ? $config["appname"] : "PHPHT - Unconfigured";
     $this->views = (isset($config["views"])) ? $config["views"] : "views";
-    $this->assets = (isset($config["assets"])) ? $config["assets"] : "assets";
+    $this->assets = (isset($config["assets"])) ? $config["assets"] : "public";
     $this->home = (isset($config["home"])) ? $config["home"] : "home.php";
-    $this->baseurl = (isset($config["baseurl"])) ? $config["baseurl"] : "";
-    $this->db = $this->buildDB($config);
-    if($this->db) $this->auth = new \Delight\Auth\Auth($db);
-  }
-
-  private function buildDB($config) {
-    $dbtype = (isset($config["dbtype"])) ? $config["dbtype"] : "sqlite";
-    $dblocation = (isset($config["dblocation"])) ? $config["dblocation"] : "db/phpht.db";
-    if(!file_exists($dblocation)) return null;
-    return new \PDO("${dbtype}:${dblocation}");
-  }
-
-  public function importModule($moduleClass,$moduleName) {
-    $this->modules[$moduleName] = $moduleClass;
+    $this->baseurl = (isset($config["baseurl"])) ? $config["baseurl"] : "/";
+    $this->db = new \PDO($config["dbtype"].":".$config["dblocation"]);
+    if($this->db) $this->auth = new \Delight\Auth\Auth($this->db);
   }
 
   public function asJSON($data) {
@@ -33,8 +28,147 @@ Class Phpht {
     echo $jsonString;
   }
 
+  public function getConfig($var) {
+    return $this->config[$var];
+  }
+
+  public function getFavicon($matches) {
+    syslog(LOG_INFO,"Skipping favicon");
+    return true;
+  }
+
+  public function getModelHome($matches) {
+    global ${$matches[1]};
+    if(!is_a(${$matches[1]},"PHPHTModel")) return $this->view404();
+    $reportName = ($matches[1]) ? $matches[1] : null;
+    syslog(LOG_INFO,"getModelHome(): ".$_SERVER['QUERY_STRING']);
+    $this->view(null,array(
+      "pageTitle" => $this->appname,
+      "reportName" => $reportName,
+      "reportQueryString" => $_SERVER['QUERY_STRING']
+    ));
+  }
+
+  public function getVal($var) {
+    syslog(LOG_INFO,"Returning: ".$this->$var);
+    return $this->$var;
+  }
+
+  public function goLogin() {
+    syslog(LOG_INFO,"starting auth-check");
+    if(!$this->auth->isLoggedIn()) {
+      syslog(LOG_INFO,"user not logged-in");
+      $_SESSION["last_uri"] = $_SERVER["REQUEST_URI"];
+      return $this->view("login.php",array("messages" => array("you must log in")));
+    } else {
+      syslog(LOG_INFO,"checking if last URL matches login page: ".preg_match('/\\/login\\/?$/',$_SESSION["last_uri"]));
+      if(isset($_SESSION["last_uri"]) && preg_match('/\\/login\\/?$/',$_SESSION["last_uri"])===0) return header('Location: '.$_SESSION["last_uri"]);
+      return $this->redirectTo($this->baseurl);
+    }
+  }
+
+  public function goLogout() {
+    syslog(LOG_INFO,"attempting logout...");
+    try {
+      $this->auth->logOutEverywhere();
+      syslog(LOG_INFO,"logout complete");
+      return $this->phpht->redirectTo($this->phpht->baseurl);
+    }
+    catch (\Delight\Auth\NotLoggedInException $e) {
+      syslog(LOG_INFO,"logout complete");
+      return $this->phpht->redirectTo($this->phpht->baseurl);
+    }
+  }
+
+  public function goVerify($matches) {
+    syslog(LOG_INFO,"attempting to verify registration");
+    try {
+      $auth->confirmEmail($_GET['selector'], $_GET['token']);
+      echo 'Email address has been verified';
+      return $this->phpht->redirectTo($this->phpht->baseurl);
+    }
+    catch (\Delight\Auth\InvalidSelectorTokenPairException $e) {
+      die('Invalid token');
+    }
+    catch (\Delight\Auth\TokenExpiredException $e) {
+        die('Token expired');
+    }
+    catch (\Delight\Auth\UserAlreadyExistsException $e) {
+        die('Email address already exists');
+    }
+    catch (\Delight\Auth\TooManyRequestsException $e) {
+        die('Too many requests');
+    }
+  }
+
+  // public function importModule($moduleClass,$moduleName) {
+  //   $this->modules[$moduleName] = $moduleClass;
+  // }
+
+  public function isLoggedIn() {
+    return $this->auth->isLoggedIn();
+  }
+
+  public function postRegister($matches) {
+    syslog(LOG_INFO, "attempting to register user");
+    try {
+      $userId = $this->auth->register($_POST["email"],$_POST["pass"],null, function ($selector, $token) {
+        $mj = new \Mailjet\Client($this->config["mailApiKey"],$this->config["mailSecretKey"],true,['version' => 'v3.1']);
+        syslog(LOG_INFO, "user registered - user must be verified");
+        syslog(LOG_INFO, "sending email verification");
+        $verificationURL = 'https://froogle.io/verify?selector=' . \urlencode($selector) . '&token=' . \urlencode($token);
+        $body = [
+          'Messages' => [
+            [
+              'From' => [
+                'Email' => "support@froogle.io",
+                'Name' => "Froogle Support"
+              ],
+              'To' => [
+                [
+                  'Email' => $_POST["email"],
+                  'Name' => "Trav"
+                ]
+              ],
+              'Subject' => "Greetings from Froogle.io.",
+              'TextPart' => "Hi ".$_POST['email'].", welcome to froogle.io! Please go to ".$verificationURL." to verify your account. Thanks!",
+              'HTMLPart' => "<h3>Hi ".$_POST['email'].", welcome to <a href='https://froogle.io/'>froogle.io</a>!</h3><br />Click <a href='".$verificationURL."'>this link</a> to verify your account. Start managing your money like a true boss!",
+              'CustomID' => "AppGettingStartedTest"
+            ]
+          ]
+        ];
+        $response = $mj->post(\Mailjet\Resources::$Email, ['body' => $body]);
+        if($response->success()) {
+          $data["response_code"] = 201;
+          $data["messages"][] = "User ".$_POST['email']." registered (but not verified)";
+        } else {
+          $data["response_code"] = 409;
+          $data["errors"][] = "failed to register user";  
+        }
+        $this->phpht->view("registered.php",$data);
+      });
+    }
+    catch (\Delight\Auth\InvalidEmailException $e) {
+      die('Invalid email address');
+    }
+    catch (\Delight\Auth\InvalidPasswordException $e) {
+        die('Invalid password');
+    }
+    catch (\Delight\Auth\UserAlreadyExistsException $e) {
+        die('User already exists');
+    }
+    catch (\Delight\Auth\TooManyRequestsException $e) {
+        die('Too many requests');
+    }
+  }
+
+  public function redirectTo($url) {
+    syslog(LOG_INFO,"Redirecting to: $url");
+    header("Location: $url");
+  }
+
   public function view($template=null,$data=[]) {
-    global $auth;
+    // global $auth;
     $template = (isset($template)) ? $template : $this->home;
     if(!file_exists($this->views."/".$template)) {
       return $this->view404($this->views."/".$template);
@@ -45,7 +179,7 @@ Class Phpht {
     }
     $data["appname"] = $this->appname;
     include($this->views."/head.php");
-    if(file_exists($this->views."/navbar.php")) include($this->views."/navbar.php");
+    include($this->views."/navbar.php");
     include($this->views."/".$template);
     include($this->views."/foot.php");
   }
@@ -94,28 +228,6 @@ Class Phpht {
     syslog(LOG_INFO,"Showing server info phpinfo()");
     return $this->view("info.php");
   }
-
-  public function redirectTo($url) {
-    syslog(LOG_INFO,"Redirecting to: $url");
-    header("Location: $url");
-  }
-  
-  public function getFavicon($matches) {
-    syslog(LOG_INFO,"Skipping favicon");
-    return true;
-  }
-
-  public function getModelHome($matches) {
-    global ${$matches[1]};
-    if(!is_a(${$matches[1]},"PHPHTModel")) return $this->view404();
-    $reportName = ($matches[1]) ? $matches[1] : null;
-    syslog(LOG_INFO,"getModelHome(): ".$_SERVER['QUERY_STRING']);
-    $this->view(null,array(
-      "pageTitle" => $this->appname,
-      "reportName" => $reportName,
-      "reportQueryString" => $_SERVER['QUERY_STRING']
-    ));
-  }  
 }
 
 function viewAsJSON($objType,$objs,$errors) {

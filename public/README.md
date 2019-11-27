@@ -1,0 +1,2 @@
+# phpht
+JS directory
