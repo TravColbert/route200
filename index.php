@@ -83,13 +83,13 @@ $my_model = new My_Model();
  * second element is a method in the object. We often use this format 
  * when using PHPHT's internal methods.
  */
-$phpht->router->get("/^favicon\.ico/",array($phpht,"getFavicon"));
+$phpht->router->get("/^\\/favicon\.ico/",array($phpht,"getFavicon"));
 $phpht->router->get("/^\\/_info\\/?/",array($phpht,"viewInfo"));
 $phpht->router->get("/^\\/(_diag)(\\/.+)*\\//",array($phpht,"viewDiag"));
 $phpht->router->get("/^\\/404\\/?/",array($phpht,"view404"));
 $phpht->router->get("/^\\/login\\/?/",array($phpht,"goLogin"));
 $phpht->router->get("/^logout\\/?/",array($phpht,"goLogout"));
-$phpht->router->get("/^register\\/?/",array($phpht,"viewRegister"));
+$phpht->router->get("/^\\/register\\/?/",array($phpht,"viewRegister"));
 $phpht->router->get("/^verify\\/?/",array($phpht,"goVerify"));
 $phpht->router->get("/^settings\\/?/",array($phpht,"goSettings"));
 
@@ -115,8 +115,7 @@ $phpht->router->delete("/^\\/([^\\/]+)\\/([0-9]+)\\/?/","delete");
  * 
  * This defines the root route: the front door to your app.
  */
-$phpht->router->get("/\\/?/",function($matches) {
-  global $phpht;
+$phpht->router->get("/\\/?/",function($matches) use ($phpht) {
   $phpht->view($phpht->getVal("home"),$matches);
 });
 
