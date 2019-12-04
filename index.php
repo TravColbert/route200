@@ -88,10 +88,10 @@ $phpht->router->get("/^\\/_info\\/?/",array($phpht,"viewInfo"));
 $phpht->router->get("/^\\/(_diag)(\\/.+)*\\//",array($phpht,"viewDiag"));
 $phpht->router->get("/^\\/404\\/?/",array($phpht,"view404"));
 $phpht->router->get("/^\\/login\\/?/",array($phpht,"goLogin"));
-$phpht->router->get("/^logout\\/?/",array($phpht,"goLogout"));
+$phpht->router->get("/^\\/logout\\/?/",array($phpht,"goLogout"));
 $phpht->router->get("/^\\/register\\/?/",array($phpht,"viewRegister"));
-$phpht->router->get("/^verify\\/?/",array($phpht,"goVerify"));
-$phpht->router->get("/^settings\\/?/",array($phpht,"goSettings"));
+$phpht->router->get("/^\\/verify\\/?/",array($phpht,"goVerify"));
+$phpht->router->get("/^\\/settings\\/?/",array($phpht,"goSettings"));
 
 /**
  * These are generic routes that work with basic, non-compound objects
@@ -99,12 +99,12 @@ $phpht->router->get("/^settings\\/?/",array($phpht,"goSettings"));
  */
 $phpht->router->get("/^\\/([^\\/]+)\\/new\\/?/","setupNewObject");
 $phpht->router->get("/^\\/([^\\/]+)\\/([0-9]+)\\/edit\\/?/","toForm");
-$phpht->router->get("/^\\/([^\\/]+)\\/([0-9]+)\\/?/","listItems");
-$phpht->router->get("/^\\/([^\\/]+)\\/(json)\\/?/","exportToJSON");
-$phpht->router->get("/^\\/([^\\/]+)\\/?/",array("phpht","getModelHome"));
+$phpht->router->get("/^\\/([^\\/]+)\\/([0-9]+)\\/?/",array($phpht,"getItem"));
+$phpht->router->get("/^\\/([^\\/]+)\\/(json)\\/?/",array($phpht,"getItemsJson"));
+$phpht->router->get("/^\\/([^\\/]+)\\/?/",array($phpht,"getModelHome"));
 
-$phpht->router->post("/^register\\/?/",array($phpht,"postRegister"));
-$phpht->router->post("/^login\\/?/",array($phpht,"postLogin"));
+$phpht->router->post("/^\\/register\\/?/",array($phpht,"postRegister"));
+$phpht->router->post("/^\\/login\\/?/",array($phpht,"postLogin"));
 $phpht->router->post("/^\\/([^\\/]+)\\/([0-9]+)\\/?/","edit");
 $phpht->router->post("/^\\/([^\\/]+)\\/?$/","add");
 
