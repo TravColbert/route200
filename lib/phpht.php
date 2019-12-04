@@ -15,7 +15,9 @@ Class Phpht {
     $this->home = (isset($config["home"])) ? $config["home"] : "home.php";
     $this->baseurl = (isset($config["baseurl"])) ? $config["baseurl"] : "/";
     $this->db = new \PDO($config["dbtype"].":".$config["dblocation"]);
-    if($this->db) $this->auth = new \Delight\Auth\Auth($this->db);
+    if($this->db) {
+      $this->auth = new \Delight\Auth\Auth($this->db);
+    }
   }
 
   public function asJSON($data) {
@@ -24,11 +26,11 @@ Class Phpht {
       http_response_code($data["response_code"]);
     }
     $jsonString = json_encode($data);
-    // syslog(LOG_INFO,"JSON STRING: ".$jsonString);
     echo $jsonString;
   }
 
   public function getConfig($var) {
+    syslog(LOG_INFO,"Getting config value: ${var}");
     return $this->config[$var];
   }
 
@@ -37,12 +39,25 @@ Class Phpht {
     return true;
   }
 
+  public function getItemsJson($matches) {
+    return $this->asJSON($this->getItems($matches));
+  }
+
+  private function getItems($matches) {
+    global ${$matches[1]};
+    // $id = (count($matches)>=3) ? $matches[2] : null;
+    $resultArray = ${$matches[1]}->get();
+    syslog(LOG_DEBUG,"Result count: ".count($resultArray['result']));
+    $resultArray["errors"] = array();
+    return $resultArray;
+  }
+  
   public function getModelHome($matches) {
     global ${$matches[1]};
     if(!is_a(${$matches[1]},"PHPHTModel")) return $this->view404();
     $reportName = ($matches[1]) ? $matches[1] : null;
     syslog(LOG_INFO,"getModelHome(): ".$_SERVER['QUERY_STRING']);
-    $this->view(null,array(
+    return $this->view(null,array(
       "pageTitle" => $this->appname,
       "reportName" => $reportName,
       "reportQueryString" => $_SERVER['QUERY_STRING']
@@ -100,10 +115,6 @@ Class Phpht {
         die('Too many requests');
     }
   }
-
-  // public function importModule($moduleClass,$moduleName) {
-  //   $this->modules[$moduleName] = $moduleClass;
-  // }
 
   public function isLoggedIn() {
     return $this->auth->isLoggedIn();
@@ -184,7 +195,7 @@ Class Phpht {
     include($this->views."/foot.php");
   }
 
-  public function view404($page) {
+  public function view404($page = "") {
     syslog(LOG_INFO, "page: ${page} not found");
     $data = array(
       'pageTitle' => "4 oh 4",
@@ -196,12 +207,9 @@ Class Phpht {
   }
 
   public function viewDiag($matches) {
-    global $db;
     echo "<pre>";
-    if($db) {
-      echo "DB connection client version: ".$db->getAttribute(PDO::ATTR_CLIENT_VERSION)."\n";
-      // $connectionStatus = ($db->getAttribute(PDO::ATTR_CONNECTION_STATUS)) ? "true" : "false";
-      // echo "DB connection status: {$connectionStatus}\n";
+    if($this->db) {
+      echo "DB connection client version: ".$this->db->getAttribute(PDO::ATTR_CLIENT_VERSION)."\n";
     }
     echo "URL Handler-checker\n";
     echo "Matches:\n";
@@ -224,9 +232,14 @@ Class Phpht {
   }
 
   public function viewInfo() {
-    global $router;
+    // global $router;
     syslog(LOG_INFO,"Showing server info phpinfo()");
     return $this->view("info.php");
+  }
+
+  public function viewRegister() {
+    syslog(LOG_INFO,"Showing registration (sign-up) page");
+    return $this->view("register.php");
   }
 }
 
@@ -282,16 +295,6 @@ function setupNewObject($matches) {
 //   return;
 // }
 
-function getModel($matches) {
-  global ${$matches[1]};
-  $id = (count($matches)>=3) ? $matches[2] : null;
-  $resultArray = ${$matches[1]}->get();
-  // syslog(LOG_DEBUG,"ResultArray: ".join(',',$resultArray['result']));
-  syslog(LOG_DEBUG,"Result count: ".count($resultArray['result']));
-  $resultArray["errors"] = array();
-  return $resultArray;
-}
-
 /**
  * EXPORT FUNCTIONS
  */
@@ -316,16 +319,6 @@ function exportToCSV($matches) {
   syslog(LOG_INFO,"Exporting to CSV");
   $exporter = getExporterObject($matches);
   $exporter->downloadCSV();
-  return;
-}
-
-function exportToJSON($matches) {
-  $modelData = getModel($matches);
-  // var_dump($modelData);
-  // return;
-  $jsonResult = asJSON($modelData);
-  // syslog(LOG_DEBUG,"JSON: ".$jsonResult." length: ".strlen($jsonResult));
-  echo $jsonResult;
   return;
 }
 
