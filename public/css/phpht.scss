@@ -2,3 +2,27 @@
   visibility: hidden;
   display: none;
 }
+
+nav {
+  ul {
+    // @extend .flexy-row;
+    justify-content: flex-end;
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    li {
+      display: flex;
+      flex-direction: row;
+      margin: 0 8px 0;
+      a, label {
+        flex-direction: row;
+        display: flex;
+        align-items: center;
+      }
+    }
+  }
+  #show-menu:not(:checked) ~ li.menu-link {
+    display: none;
+    visibility: hidden;
+  }
+}
