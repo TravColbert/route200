@@ -13,6 +13,7 @@ Class Phpht {
     $this->views = (isset($config["views"])) ? $config["views"] : "views";
     $this->assets = (isset($config["assets"])) ? $config["assets"] : "public";
     $this->home = (isset($config["home"])) ? $config["home"] : "home.php";
+    $this->appurl = (isset($config["appurl"])) ? $config["appurl"] : "localhost.localhost";
     $this->baseurl = (isset($config["baseurl"])) ? $config["baseurl"] : "/";
     $this->db = new \PDO($config["dbtype"].":".$config["dblocation"]);
     if($this->db) {
@@ -69,6 +70,46 @@ Class Phpht {
     return $this->$var;
   }
 
+  public function getDiag($matches) {
+    echo "<pre>";
+    if($this->db) {
+      echo "DB connection client version: ".$this->db->getAttribute(PDO::ATTR_CLIENT_VERSION)."\n";
+    }
+    echo "URL Handler-checker\n";
+    echo "Matches:\n";
+    if($matches[2]) {
+      $path = explode("/",$matches[2]);
+      array_shift($path);
+      array_splice($matches, 2, 1, $path);
+    }
+    for($c=0;$c<count($matches);$c++) {
+      echo "Match ".$c." => ".$matches[$c]."\n";
+    }
+    echo "Query String Processing:\n";
+    var_dump($_GET);
+    var_dump($_SERVER['QUERY_STRING']);
+    echo "</pre>";
+  }
+
+  public function goAuthCheck($userName = 'superuser') {
+    syslog(LOG_INFO,"starting auth-check");
+    try {
+      syslog(LOG_INFO,"initial user registered?");
+      $userId = $this->auth->register("su@".$this->appurl,"test123!","superuser",null);
+      syslog(LOG_INFO,"initial user created");
+      return $this->view("login.php");
+    } catch (\Delight\Auth\UserAlreadyExistsException $e) {
+      syslog(LOG_INFO,"initial user exists");
+      return $this->view("home.php");
+    } catch(\Delight\Auth\DatabaseError $e) {
+      syslog(LOG_INFO,$e);
+      return $this->view404();
+    } catch (Error $e) {
+      syslog(LOG_DEBUG,$e);
+      return $this->view404();
+    }
+  }
+
   public function goLogin() {
     syslog(LOG_INFO,"starting auth-check");
     if(!$this->auth->isLoggedIn()) {
@@ -78,7 +119,7 @@ Class Phpht {
     } else {
       syslog(LOG_INFO,"checking if last URL matches login page: ".preg_match('/\\/login\\/?$/',$_SESSION["last_uri"]));
       if(isset($_SESSION["last_uri"]) && preg_match('/\\/login\\/?$/',$_SESSION["last_uri"])===0) return header('Location: '.$_SESSION["last_uri"]);
-      return $this->redirectTo($this->baseurl);
+      return $this->redirectTo($this->getConfig("prefixurl"));
     }
   }
 
@@ -87,11 +128,11 @@ Class Phpht {
     try {
       $this->auth->logOutEverywhere();
       syslog(LOG_INFO,"logout complete");
-      return $this->phpht->redirectTo($this->phpht->baseurl);
+      return $this->redirectTo($this->getConfig("prefixurl"));
     }
     catch (\Delight\Auth\NotLoggedInException $e) {
       syslog(LOG_INFO,"logout complete");
-      return $this->phpht->redirectTo($this->phpht->baseurl);
+      return $this->redirectTo($this->getConfig("prefixurl"));
     }
   }
 
@@ -100,7 +141,7 @@ Class Phpht {
     try {
       $auth->confirmEmail($_GET['selector'], $_GET['token']);
       echo 'Email address has been verified';
-      return $this->phpht->redirectTo($this->phpht->baseurl);
+      return $this->redirectTo($this->getConfig("prefixurl"));
     }
     catch (\Delight\Auth\InvalidSelectorTokenPairException $e) {
       die('Invalid token');
@@ -118,6 +159,28 @@ Class Phpht {
 
   public function isLoggedIn() {
     return $this->auth->isLoggedIn();
+  }
+
+  public function postLogin($matches) {
+    syslog(LOG_INFO,"attempting login");
+    try {
+      $this->auth->login($_POST["username"],$_POST["pass"]);
+      syslog(LOG_INFO,"login success");
+      if(isset($_SESSION["last_uri"])) header('Location: '.$_SESSION["last_uri"]);
+      return $this->view();
+    }
+    catch (\Delight\Auth\InvalidEmailException $e) {
+      return $this->view("login.php",array('errors' => array('Wrong email address')));
+    }
+    catch (\Delight\Auth\InvalidPasswordException $e) {
+      return $this->view("login.php",array('errors' => array('Wrong password')));
+    }
+    catch (\Delight\Auth\EmailNotVerifiedException $e) {
+      return $this->view("login.php",array('errors' => array('Email not verified')));
+    }
+    catch (\Delight\Auth\TooManyRequestsException $e) {
+      return $this->view("login.php",array('errors' => array('Too many requests')));
+    }
   }
 
   public function postRegister($matches) {
@@ -156,7 +219,7 @@ Class Phpht {
           $data["response_code"] = 409;
           $data["errors"][] = "failed to register user";  
         }
-        $this->phpht->view("registered.php",$data);
+        $this->view("registered.php",$data);
       });
     }
     catch (\Delight\Auth\InvalidEmailException $e) {
@@ -204,27 +267,6 @@ Class Phpht {
     http_response_code(404);
     return $this->view("404.php",$data);
     exit;
-  }
-
-  public function viewDiag($matches) {
-    echo "<pre>";
-    if($this->db) {
-      echo "DB connection client version: ".$this->db->getAttribute(PDO::ATTR_CLIENT_VERSION)."\n";
-    }
-    echo "URL Handler-checker\n";
-    echo "Matches:\n";
-    if($matches[2]) {
-      $path = explode("/",$matches[2]);
-      array_shift($path);
-      array_splice($matches, 2, 1, $path);
-    }
-    for($c=0;$c<count($matches);$c++) {
-      echo "Match ".$c." => ".$matches[$c]."\n";
-    }
-    echo "Query String Processing:\n";
-    var_dump($_GET);
-    var_dump($_SERVER['QUERY_STRING']);
-    echo "</pre>";
   }
 
   public function viewHelp() {
