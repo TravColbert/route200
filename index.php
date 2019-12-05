@@ -85,7 +85,8 @@ $my_model = new My_Model();
  */
 $phpht->router->get("/^\\/favicon\.ico/",array($phpht,"getFavicon"));
 $phpht->router->get("/^\\/_info\\/?/",array($phpht,"viewInfo"));
-$phpht->router->get("/^\\/(_diag)(\\/.+)*\\//",array($phpht,"viewDiag"));
+$phpht->router->get("/^\\/_auth\\//",array($phpht,"goAuthCheck"));
+$phpht->router->get("/^\\/(_diag)(\\/.+)*\\//",array($phpht,"getDiag"));
 $phpht->router->get("/^\\/404\\/?/",array($phpht,"view404"));
 $phpht->router->get("/^\\/login\\/?/",array($phpht,"goLogin"));
 $phpht->router->get("/^\\/logout\\/?/",array($phpht,"goLogout"));
