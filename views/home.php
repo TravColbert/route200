@@ -12,7 +12,7 @@
   </div>
   <div class="container wimpy">
     <div class="logobox">
-      <img id="coinslogo" src="<?php echo $this->getConfig("prefixurl") ?>/public/img/phpht.png"/>
+      <img id="applogo" src="<?php echo $this->getConfig("prefixurl") ?>/public/img/phpht.png"/>
     </div>
   </div>
 </article>
