@@ -5,14 +5,14 @@
       <div>It's working!</div>
       <hr/>
     </div>
-    <div class="subblurb">PHPHT is a fast, secure MVC framework using Delight Auth and Mailjet</div>
+    <div class="subblurb">PHPHT is a fast, secure, Progressive Web App framework using Vue.js, Delight Auth and Mailjet</div>
     <div id="learnmore">
-      <a href="<?php echo $this->baseurl; ?>blog/" class="buttonstyle compact">learn more</a>
+      <a href="<?php echo $this->getConfig("prefixurl") ?>/blog/" class="buttonstyle compact">Learn more</a>
     </div>
   </div>
   <div class="container wimpy">
     <div class="logobox">
-      <img id="coinslogo" src="/public/img/phpht.png"/>
+      <img id="coinslogo" src="<?php echo $this->getConfig("prefixurl") ?>/public/img/phpht.png"/>
     </div>
   </div>
 </article>

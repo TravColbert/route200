@@ -1,13 +1,13 @@
 <article id="mainwelcome" class="fullpage">
   <div class="container">
     <div class="mainblurb">
-      <div>Register To Start</div>
-      <div>Getting Froogle</div>
+      <div>Sign Up</div>
+      <div>To start using <?php echo $this->appname ?></div>
       <hr/>
     </div>
-    <div class="subblurb">Already registered? Dive right in!</div>
+    <div class="subblurb">Already signed-up? Dive right in!</div>
     <div id="loginbutton">
-      <a href="<?php echo $this->baseurl; ?>login/" class="buttonstyle compact">log in</a>
+      <a href="<?php echo $this->getConfig("prefixurl") ?>/login/" class="buttonstyle compact">log in</a>
     </div>
   </div>
   <?php
@@ -16,7 +16,7 @@
   ?>
   <div class="container wimpy">
     <div class="registerbox formbox">
-      <form id="registerform" action="<?php echo $this->baseurl ?>register/" method="POST">
+      <form id="registerform" action="<?php echo $this->getConfig("prefixurl") ?>/register/" method="POST">
         <div class="fieldset">
           <div id="ff-email" class="formfield">
             <input type="text" name="email" id="email" placeholder="email">
