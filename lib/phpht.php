@@ -14,7 +14,7 @@ Class Phpht {
     $this->assets = (isset($config["assets"])) ? $config["assets"] : "public";
     $this->home = (isset($config["home"])) ? $config["home"] : "home.php";
     $this->appurl = (isset($config["appurl"])) ? $config["appurl"] : "localhost.localhost";
-    $this->baseurl = (isset($config["baseurl"])) ? $config["baseurl"] : "/";
+    $this->config["baseurl"] = (isset($config["baseurl"])) ? $config["baseurl"] : dirname($_SERVER['SCRIPT_NAME']);
     $this->dbtype = (isset($config["dbtype"])) ? $config["dbtype"] : "sqlite";
     $this->dblocation = (isset($config["dblocation"])) ? $config["dblocation"] : "db/phpht.db";
     $this->db = new \PDO($this->dbtype.":".$this->dblocation);
@@ -33,7 +33,7 @@ Class Phpht {
   }
 
   public function getConfig($var) {
-    syslog(LOG_INFO,"Getting config value: ${var}");
+    syslog(LOG_INFO,"Getting config value: '${var}'");
     return $this->config[$var];
   }
 
@@ -121,7 +121,7 @@ Class Phpht {
     } else {
       syslog(LOG_INFO,"checking if last URL matches login page: ".preg_match('/\\/login\\/?$/',$_SESSION["last_uri"]));
       if(isset($_SESSION["last_uri"]) && preg_match('/\\/login\\/?$/',$_SESSION["last_uri"])===0) return header('Location: '.$_SESSION["last_uri"]);
-      return $this->redirectTo($this->getConfig("prefixurl"));
+      return $this->redirectTo($this->getConfig("baseurl"));
     }
   }
 
@@ -130,11 +130,11 @@ Class Phpht {
     try {
       $this->auth->logOutEverywhere();
       syslog(LOG_INFO,"logout complete");
-      return $this->redirectTo($this->getConfig("prefixurl"));
+      return $this->redirectTo($this->getConfig("baseurl"));
     }
     catch (\Delight\Auth\NotLoggedInException $e) {
       syslog(LOG_INFO,"logout complete");
-      return $this->redirectTo($this->getConfig("prefixurl"));
+      return $this->redirectTo($this->getConfig("baseurl"));
     }
   }
 
@@ -143,7 +143,7 @@ Class Phpht {
     try {
       $auth->confirmEmail($_GET['selector'], $_GET['token']);
       echo 'Email address has been verified';
-      return $this->redirectTo($this->getConfig("prefixurl"));
+      return $this->redirectTo($this->getConfig("baseurl"));
     }
     catch (\Delight\Auth\InvalidSelectorTokenPairException $e) {
       die('Invalid token');

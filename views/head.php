@@ -8,7 +8,7 @@
   <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
   <!-- <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script> -->
   <!-- <script src="https://kit.fontawesome.com/d5c73f28c4.js" crossorigin="anonymous"></script> -->
-  <link rel="stylesheet" type="text/css" media="screen" href="<?php echo $this->getConfig("prefixurl") ?>/public/css/phpht.css">
+  <link rel="stylesheet" type="text/css" media="screen" href="<?php echo $this->getConfig("baseurl") ?>/public/css/phpht.css">
 </head>
 <?php
 if(!$this->isLoggedIn()) {

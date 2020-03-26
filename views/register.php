@@ -7,7 +7,7 @@
     </div>
     <div class="subblurb">Already signed-up? Dive right in!</div>
     <div id="loginbutton">
-      <a href="<?php echo $this->getConfig("prefixurl") ?>/login/" class="buttonstyle compact">log in</a>
+      <a href="<?php echo $this->getConfig("baseurl") ?>/login/" class="buttonstyle compact">log in</a>
     </div>
   </div>
   <?php
@@ -16,7 +16,7 @@
   ?>
   <div class="container wimpy">
     <div class="registerbox formbox">
-      <form id="registerform" action="<?php echo $this->getConfig("prefixurl") ?>/register/" method="POST">
+      <form id="registerform" action="<?php echo $this->getConfig("baseurl") ?>/register/" method="POST">
         <div class="fieldset">
           <div id="ff-email" class="formfield">
             <input type="text" name="email" id="email" placeholder="email">
