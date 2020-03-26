@@ -2,9 +2,11 @@
 $config = parse_ini_file("./config/config.ini");
 openlog((isset($config["appname"])) ? $config["appname"] : "phpht", LOG_PID, LOG_SYSLOG);
 
-require __DIR__ . '/vendor/autoload.php';
+$vendor = (isset($config["vendor"])) ? $config["vendor"] : "/vendor";
+require __DIR__ . $vendor . '/autoload.php';
 
-require_once("lib/phpht.php");
+$libdir = (isset($config["libdir"])) ? $config["libdir"] : "/lib";
+require_once(__DIR__ . $libdir . "/phpht.php");
 $phpht = new Phpht($config);
 
 // Setup what folder your static assets are pulled from (e.g. 'public')
