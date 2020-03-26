@@ -15,7 +15,9 @@ Class Phpht {
     $this->home = (isset($config["home"])) ? $config["home"] : "home.php";
     $this->appurl = (isset($config["appurl"])) ? $config["appurl"] : "localhost.localhost";
     $this->baseurl = (isset($config["baseurl"])) ? $config["baseurl"] : "/";
-    $this->db = new \PDO($config["dbtype"].":".$config["dblocation"]);
+    $this->dbtype = (isset($config["dbtype"])) ? $config["dbtype"] : "sqlite";
+    $this->dblocation = (isset($config["dblocation"])) ? $config["dblocation"] : "db/phpht.db";
+    $this->db = new \PDO($this->dbtype.":".$this->dblocation);
     if($this->db) {
       $this->auth = new \Delight\Auth\Auth($this->db);
     }
