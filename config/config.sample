@@ -13,7 +13,7 @@
 ;
 ; Home : the main homepage
 ; This can be a PHP file if you want some dynamics
-; home = "homepage.php"
+; home = "home.php"
 ;
 ; URLS : locations of resources
 ; baseurl = "/"
