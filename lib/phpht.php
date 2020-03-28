@@ -33,7 +33,6 @@ Class Phpht {
   }
 
   public function getConfig($var) {
-    syslog(LOG_INFO,"Getting config value: '${var}'");
     return $this->config[$var];
   }
 
