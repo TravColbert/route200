@@ -15,7 +15,8 @@ Class Router {
   function __construct($urlBase=null) {
     syslog(LOG_INFO,$this->my_name.": Starting new PHPHT Router at URL base: '{$urlBase}'");
     if($urlBase===null){
-      $this->urlBase = dirname($_SERVER['SCRIPT_NAME']);
+      $basedir = dirname($_SERVER['SCRIPT_NAME']);
+      $this->urlBase = ($basedir==='/') ? '' : $basedir;
     } else {
       $this->urlBase = $urlBase;
     }

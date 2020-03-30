@@ -14,7 +14,7 @@ Class Phpht {
     $this->assets = (isset($config["assets"])) ? $config["assets"] : "public";
     $this->home = (isset($config["home"])) ? $config["home"] : "home.php";
     $this->appurl = (isset($config["appurl"])) ? $config["appurl"] : "localhost.localhost";
-    $this->config["baseurl"] = (isset($config["baseurl"])) ? $config["baseurl"] : dirname($_SERVER['SCRIPT_NAME']);
+    $this->config["baseurl"] = (isset($config["baseurl"])) ? $config["baseurl"] : $this->router->getUrlBase();
     $this->dbtype = (isset($config["dbtype"])) ? $config["dbtype"] : "sqlite";
     $this->dblocation = (isset($config["dblocation"])) ? $config["dblocation"] : "db/phpht.db";
     $this->db = new \PDO($this->dbtype.":".$this->dblocation);
