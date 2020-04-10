@@ -4,6 +4,7 @@ Class Phpht {
   private $auth = false;
   public $router;
   protected $config;
+  protected $manifest;
 
   function __construct($config) {
     $this->config = $config;
@@ -21,6 +22,27 @@ Class Phpht {
     if($this->db) {
       $this->auth = new \Delight\Auth\Auth($this->db);
     }
+    $this->manifest = array(
+      "short_name" => "PHPHT PWA",
+      "name" => "PHPHT Progressive Web Application Demo",
+      "description" => "How to build a PWA with PHPHT",
+      "icons" => array(),
+      "start_url" => "/demo/",
+      "background_color" => "#fafafa",
+      "display" => "standalone",
+      "scope" => "/",
+      "theme_color" => "#fafafa"
+    );
+    $this->manifest["icons"][] = array(
+      "src" => "/public/img/favicons/android-icon-192x192.png",
+      "type" => "image/png",
+      "sizes" => "192x192"
+    );
+    $this->manifest["icons"][] = array(
+      "src" => "/public/img/favicons/android-icon-512x512.png",
+      "type" => "image/png",
+      "sizes" => "512x512"
+    );
   }
 
   public function asJSON($data) {
@@ -34,6 +56,11 @@ Class Phpht {
 
   public function getConfig($var) {
     return $this->config[$var];
+  }
+
+  public function getManifest($matches) {
+    syslog(LOG_INFO,"Getting app manifest");
+    return $this->asJSON($this->manifest);
   }
 
   public function getFavicon($matches) {
@@ -56,10 +83,15 @@ Class Phpht {
   
   public function getModelHome($matches) {
     global ${$matches[1]};
-    if(!is_a(${$matches[1]},"PHPHTModel")) return $this->view404();
+    if(!is_a(${$matches[1]},"PHPHT_Model")) {
+      syslog(LOG_INFO,"getModelHome(): ".$matches[1]." is not a PHPHT_Model object");
+      return $this->view404();
+    }
+    $modelView = ${$matches[1]}->getView();
+    syslog(LOG_INFO,"getModelHome(): {$matches[1]}: Setting view to ".$modelView);
     $reportName = ($matches[1]) ? $matches[1] : null;
-    syslog(LOG_INFO,"getModelHome(): ".$_SERVER['QUERY_STRING']);
-    return $this->view(null,array(
+    syslog(LOG_INFO,"getModelHome(): {$matches[1]}: query_string ".$_SERVER['QUERY_STRING']);
+    return $this->view($modelView,array(
       "pageTitle" => $this->appname,
       "reportName" => $reportName,
       "reportQueryString" => $_SERVER['QUERY_STRING']
@@ -69,6 +101,10 @@ Class Phpht {
   public function getVal($var) {
     syslog(LOG_INFO,"Returning: ".$this->$var);
     return $this->$var;
+  }
+
+  public function getStatic($path) {
+    return $this->router->serveStatic($path);
   }
 
   public function getDiag($matches) {
