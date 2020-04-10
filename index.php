@@ -12,6 +12,8 @@ $phpht = new Phpht($config);
 // Setup what folder your static assets are pulled from (e.g. 'public')
 $phpht->router->assets();
 
+require_once(__DIR__ . $libdir . "/PHPHT_Model.php");
+
 /**
  * Custom functions can go here
  * 
@@ -33,7 +35,11 @@ $my_model = new My_Model();
  * phpht will try to run a ->getModel() function on that
  * model if it exists.
  require_once("lib/Report.php");
+ *
+ * Or... you can put the above types of directives in the includes.php 
+ * file and include it. 
  */
+include "includes/includes.php";
 
 /**
  * == DEFINING ROUTES ==
@@ -85,40 +91,46 @@ $my_model = new My_Model();
  * second element is a method in the object. We often use this format 
  * when using PHPHT's internal methods.
  */
-$phpht->router->get("/^\\/favicon\.ico/",array($phpht,"getFavicon"));
-$phpht->router->get("/^\\/_info\\/?/",array($phpht,"viewInfo"));
-$phpht->router->get("/^\\/_auth\\//",array($phpht,"goAuthCheck"));
-$phpht->router->get("/^\\/(_diag)(\\/.+)*\\//",array($phpht,"getDiag"));
-$phpht->router->get("/^\\/404\\/?/",array($phpht,"view404"));
-$phpht->router->get("/^\\/login\\/?/",array($phpht,"goLogin"));
-$phpht->router->get("/^\\/logout\\/?/",array($phpht,"goLogout"));
-$phpht->router->get("/^\\/register\\/?/",array($phpht,"viewRegister"));
-$phpht->router->get("/^\\/verify\\/?/",array($phpht,"goVerify"));
-$phpht->router->get("/^\\/settings\\/?/",array($phpht,"goSettings"));
+$phpht->router->get("/^\\/manifest\.webmanifest$/",array($phpht,"getManifest"));
+$phpht->router->get("/^\\/favicon\.ico$/",array($phpht,"getFavicon"));
+$phpht->router->get("/^\\/_info\\/?$/",array($phpht,"viewInfo"));
+$phpht->router->get("/^\\/_auth\\/?$/",array($phpht,"goAuthCheck"));
+$phpht->router->get("/^\\/(_diag)(\\/.+)*\\/?$/",array($phpht,"getDiag"));
+$phpht->router->get("/^\\/404\\/?$/",array($phpht,"view404"));
+$phpht->router->get("/^\\/login\\/?$/",array($phpht,"goLogin"));
+$phpht->router->get("/^\\/logout\\/?$/",array($phpht,"goLogout"));
+$phpht->router->get("/^\\/register\\/?$/",array($phpht,"viewRegister"));
+$phpht->router->get("/^\\/verify\\/?$/",array($phpht,"goVerify"));
+$phpht->router->get("/^\\/settings\\/?$/",array($phpht,"goSettings"));
+
+/**
+* Your custom routes go here
+*/
+include "routes/routes.php";
 
 /**
  * These are generic routes that work with basic, non-compound objects
  * As soon as you define them and create the model, they should Just Work
  */
-$phpht->router->get("/^\\/([^\\/]+)\\/new\\/?/","setupNewObject");
-$phpht->router->get("/^\\/([^\\/]+)\\/([0-9]+)\\/edit\\/?/","toForm");
-$phpht->router->get("/^\\/([^\\/]+)\\/([0-9]+)\\/?/",array($phpht,"getItem"));
-$phpht->router->get("/^\\/([^\\/]+)\\/(json)\\/?/",array($phpht,"getItemsJson"));
-$phpht->router->get("/^\\/([^\\/]+)\\/?/",array($phpht,"getModelHome"));
+$phpht->router->get("/^\\/([^\\/]+)\\/new\\/?$/","setupNewObject");
+$phpht->router->get("/^\\/([^\\/]+)\\/([0-9]+)\\/edit\\/?$/","toForm");
+$phpht->router->get("/^\\/([^\\/]+)\\/([0-9]+)\\/?$/",array($phpht,"getItem"));
+$phpht->router->get("/^\\/([^\\/]+)\\/(json)\\/?$/",array($phpht,"getItemsJson"));
+$phpht->router->get("/^\\/([^\\/]+)\\/?$/",array($phpht,"getModelHome"));
 
-$phpht->router->post("/^\\/register\\/?/",array($phpht,"postRegister"));
-$phpht->router->post("/^\\/login\\/?/",array($phpht,"postLogin"));
-$phpht->router->post("/^\\/([^\\/]+)\\/([0-9]+)\\/?/","edit");
+$phpht->router->post("/^\\/register\\/?$/",array($phpht,"postRegister"));
+$phpht->router->post("/^\\/login\\/?$/",array($phpht,"postLogin"));
+$phpht->router->post("/^\\/([^\\/]+)\\/([0-9]+)\\/?$/","edit");
 $phpht->router->post("/^\\/([^\\/]+)\\/?$/","add");
 
-$phpht->router->delete("/^\\/([^\\/]+)\\/([0-9]+)\\/?/","delete");
+$phpht->router->delete("/^\\/([^\\/]+)\\/([0-9]+)\\/?$/","delete");
 
 /**
  * THE ROOT ROUTE
  * 
  * This defines the root route: the front door to your app.
  */
-$phpht->router->get("/\\/?/",function($matches) use ($phpht) {
+$phpht->router->get("/^\\/?$/",function($matches) use ($phpht) {
   $phpht->view($phpht->getVal("home"),$matches);
 });
 
