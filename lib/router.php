@@ -140,4 +140,45 @@ Class Router {
       readFile($matches[1].'/'.$matches[2]);
     });
   }
+
+  public function serveStatic($path) {
+    syslog(LOG_INFO,$this->my_name.": Serving static object: {$path}");
+    $fileParts = explode(".",$path);
+    $fileExtension = array_pop($fileParts);
+    $serveLocation = '';
+    switch($fileExtension) {
+      case "js":
+        syslog(LOG_INFO,$this->my_name.": Serving static object of type: Content-Type: text/javascript");
+        header('Content-Type: text/javascript');
+        $serveLocation = '/public/js';
+        break;
+      case "json":
+        header('Content-Type: text/json');
+        break;
+      case "css":
+        header('Content-Type: text/css');
+        $serveLocation = '/public/css';
+        break;
+      case "pdf":
+        header('Content-Type: application/pdf');
+        break;
+      case "html":
+        header('Content-Type: text/html');
+        break;
+      case "ico":
+        header('Content-Type: image/x-icon');
+        break;
+      case "doc":
+        header('Content-Type: application/msword');
+        break;
+      case "docx":
+        header('Content-Type: application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+        break;
+      default:
+        header('Content-Type: text/plain');
+    };
+    syslog(LOG_INFO,$this->my_name.": Serving static object from path: ".$path);
+    header('Content-Length: '.filesize($path));
+    readFile($path);
+  }
 }
