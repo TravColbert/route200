@@ -1,12 +1,3 @@
-/**
- * SUPPORT FUNCTIONS
- */
-function filterErrors (data) {
-  console.log('Checking for errors in response data')
-  if (data.errors.length > 0) return new Error(data.errors)
-  return data
-}
-
 function stopClick (e) {
   e.stopPropagation()
 }
@@ -28,10 +19,3 @@ function ready (fn) {
     document.addEventListener('DOMContentLoaded', fn)
   }
 }
-
-/**
- * START THE JAVASCRIPT!
- */
-ready(() => {
-  stopPropagation()
-})
