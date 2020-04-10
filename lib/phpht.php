@@ -9,7 +9,7 @@ Class Phpht {
   function __construct($config) {
     $this->config = $config;
     require_once("lib/router.php");
-    $this->router = new Router();
+    $this->router = new Router(null,$this);
     $this->appname = (isset($config["appname"])) ? $config["appname"] : "PHPHT - Unconfigured";
     $this->views = (isset($config["views"])) ? $config["views"] : "views";
     $this->assets = (isset($config["assets"])) ? $config["assets"] : "public";
@@ -104,7 +104,7 @@ Class Phpht {
   }
 
   public function getStatic($path) {
-    return $this->router->serveStatic($path);
+    return $this->serveStatic($path);
   }
 
   public function getDiag($matches) {
@@ -126,6 +126,47 @@ Class Phpht {
     var_dump($_GET);
     var_dump($_SERVER['QUERY_STRING']);
     echo "</pre>";
+  }
+
+  public function serveStatic($path) {
+    syslog(LOG_INFO,$this->my_name.": Serving static object: {$path}");
+    $fileParts = explode(".",$path);
+    $fileExtension = array_pop($fileParts);
+    $serveLocation = '';
+    switch($fileExtension) {
+      case "js":
+        syslog(LOG_INFO,$this->my_name.": Serving static object of type: Content-Type: text/javascript");
+        header('Content-Type: text/javascript');
+        $serveLocation = '/public/js';
+        break;
+      case "json":
+        header('Content-Type: text/json');
+        break;
+      case "css":
+        header('Content-Type: text/css');
+        $serveLocation = '/public/css';
+        break;
+      case "pdf":
+        header('Content-Type: application/pdf');
+        break;
+      case "html":
+        header('Content-Type: text/html');
+        break;
+      case "ico":
+        header('Content-Type: image/x-icon');
+        break;
+      case "doc":
+        header('Content-Type: application/msword');
+        break;
+      case "docx":
+        header('Content-Type: application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+        break;
+      default:
+        header('Content-Type: text/plain');
+    };
+    syslog(LOG_INFO,$this->my_name.": Serving static object from path: ".$path);
+    header('Content-Length: '.filesize($path));
+    readFile($path);
   }
 
   public function goAuthCheck($userName = 'superuser') {
@@ -168,7 +209,7 @@ Class Phpht {
       return $this->redirectTo($this->getConfig("baseurl"));
     }
     catch (\Delight\Auth\NotLoggedInException $e) {
-      syslog(LOG_INFO,"logout complete");
+      syslog(LOG_INFO,"There was an exception logging out but we're doing it anyway");
       return $this->redirectTo($this->getConfig("baseurl"));
     }
   }
@@ -202,7 +243,7 @@ Class Phpht {
     syslog(LOG_INFO,"attempting login");
     try {
       $this->auth->login($_POST["username"],$_POST["pass"]);
-      syslog(LOG_INFO,"login success");
+      syslog(LOG_INFO,"login success\nRedirecting to last URI: {$_SESSION["last_uri"]}");
       if(isset($_SESSION["last_uri"])) header('Location: '.$_SESSION["last_uri"]);
       return $this->view();
     }
@@ -273,9 +314,45 @@ Class Phpht {
     }
   }
 
-  public function redirectTo($url) {
+  public function redirectTo($url = '/') {
+    $url = (strlen($url)>0) ? $url : '/'; 
     syslog(LOG_INFO,"Redirecting to: $url");
     header("Location: $url");
+  }
+
+  public function setContentType($matches) {
+    $fileParts = explode(".",$matches[2]);
+    $fileExtension = array_pop($fileParts);
+    switch($fileExtension) {
+      case "js":
+        header('Content-Type: text/javascript');
+        break;
+      case "json":
+        header('Content-Type: text/json');
+        break;
+      case "css":
+        header('Content-Type: text/css');
+        break;
+      case "pdf":
+        header('Content-Type: application/pdf');
+        break;
+      case "html":
+        header('Content-Type: text/html');
+        break;
+      case "ico":
+        header('Content-Type: image/x-icon');
+        break;
+      case "doc":
+        header('Content-Type: application/msword');
+        break;
+      case "docx":
+        header('Content-Type: application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+        break;
+      default:
+        header('Content-Type: text/plain');
+    }
+    header('Content-Length: '.filesize($matches[1].'/'.$matches[2]));
+    return;
   }
 
   public function view($template=null,$data=[]) {
