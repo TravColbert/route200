@@ -3,26 +3,92 @@
   display: none;
 }
 
-nav {
-  ul {
-    // @extend .flexy-row;
-    justify-content: flex-end;
-    list-style-type: none;
-    margin: 0;
-    padding: 0;
-    li {
-      display: flex;
-      flex-direction: row;
-      margin: 0 8px 0;
-      a, label {
-        flex-direction: row;
-        display: flex;
-        align-items: center;
-      }
-    }
-  }
-  #show-menu:not(:checked) ~ li.menu-link {
-    display: none;
-    visibility: hidden;
-  }
+// nav {
+//   ul {
+//     // @extend .flexy-row;
+//     justify-content: flex-end;
+//     list-style-type: none;
+//     margin: 0;
+//     padding: 0;
+//     li {
+//       display: flex;
+//       flex-direction: row;
+//       margin: 0 8px 0;
+//       a, label {
+//         flex-direction: row;
+//         display: flex;
+//         align-items: center;
+//       }
+//     }
+//   }
+//   #show-menu:not(:checked) ~ li.menu-link {
+//     display: none;
+//     visibility: hidden;
+//   }
+// }
+
+header.navbar {
+  background-color: #fff;
+}
+
+.fullheight {
+  height: 100%;
+}
+
+.territory-header {
+  font-size: x-small;
+}
+
+.history-entry {
+  font-size: small;
+}
+
+.noselect {
+  -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Old versions of Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome, Opera and Firefox */
+}
+
+select {
+  padding: 1px 0 1px 2px;
+  border-radius: 2px;
+}
+
+/* Disable LastPass' anoying styling */
+input.noLastPassStyle {
+  background-image:none !important;
+  background-attachment:none !important;
+  padding-right:0 !important;
+  border:1px solid #ABADB3 !important;
+}
+
+/* Expandoswitch CSS Content-hider */
+.expando-switch ~ .expando-content {
+  display: none;
+}
+.expando-switch {
+  display: none;
+}
+.expando-switch:checked ~ .expando-content {
+  display: flex;
+  flex-direction: column;
+  height: auto;
+}
+.expando-switch:checked ~ .expando-label > i {
+  transform: rotate(90deg);
+}
+.expando-label {
+  display: inline-block;
+}
+.expando-label > i {
+  padding: 0 10px;
+  /*font-size: 2em;*/
+  display: inline-block;
+  -moz-transition: .4s;
+  -webkit-transition: .4s;
+  transition: .4s;
 }

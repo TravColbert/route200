@@ -20,8 +20,4 @@
       <a href="<?php echo $this->baseurl; ?>" class="buttonstyle compact">back home</a>
     </div>
   </div>
-  <?php
-  setMessages("errors",$data);
-  setMessages("messages",$data);
-  ?>
 </article>

@@ -1,43 +1,69 @@
 .hidden {
   visibility: hidden;
-  display: none;
-}
+  display: none; }
 
-nav ul {
-  -webkit-box-pack: end;
-      -ms-flex-pack: end;
-          justify-content: flex-end;
-  list-style-type: none;
-  margin: 0;
-  padding: 0;
-}
+header.navbar {
+  background-color: #fff; }
 
-nav ul li {
-  display: -webkit-box;
-  display: -ms-flexbox;
+.fullheight {
+  height: 100%; }
+
+.territory-header {
+  font-size: x-small; }
+
+.history-entry {
+  font-size: small; }
+
+.noselect {
+  -webkit-touch-callout: none;
+  /* iOS Safari */
+  -webkit-user-select: none;
+  /* Safari */
+  -khtml-user-select: none;
+  /* Konqueror HTML */
+  -moz-user-select: none;
+  /* Old versions of Firefox */
+  -ms-user-select: none;
+  /* Internet Explorer/Edge */
+  user-select: none;
+  /* Non-prefixed version, currently
+     supported by Chrome, Opera and Firefox */ }
+
+select {
+  padding: 1px 0 1px 2px;
+  border-radius: 2px; }
+
+/* Disable LastPass' anoying styling */
+input.noLastPassStyle {
+  background-image: none !important;
+  background-attachment: none !important;
+  padding-right: 0 !important;
+  border: 1px solid #ABADB3 !important; }
+
+/* Expandoswitch CSS Content-hider */
+.expando-switch ~ .expando-content {
+  display: none; }
+
+.expando-switch {
+  display: none; }
+
+.expando-switch:checked ~ .expando-content {
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
-  margin: 0 8px 0;
-}
+  flex-direction: column;
+  height: auto; }
 
-nav ul li a, nav ul li label {
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-align: center;
-      -ms-flex-align: center;
-          align-items: center;
-}
+.expando-switch:checked ~ .expando-label > i {
+  transform: rotate(90deg); }
 
-nav #show-menu:not(:checked) ~ li.menu-link {
-  display: none;
-  visibility: hidden;
-}
+.expando-label {
+  display: inline-block; }
+
+.expando-label > i {
+  padding: 0 10px;
+  /*font-size: 2em;*/
+  display: inline-block;
+  -moz-transition: .4s;
+  -webkit-transition: .4s;
+  transition: .4s; }
+
 /*# sourceMappingURL=phpht.css.map */

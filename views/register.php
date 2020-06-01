@@ -1,34 +1,45 @@
-<article id="mainwelcome" class="fullpage">
-  <div class="container">
-    <div class="mainblurb">
-      <div>Sign Up</div>
-      <div>To start using <?php echo $this->appname ?></div>
-      <hr/>
-    </div>
-    <div class="subblurb">Already signed-up? Dive right in!</div>
-    <div id="loginbutton">
-      <a href="<?php echo $this->getConfig("baseurl") ?>/login/" class="buttonstyle compact">log in</a>
-    </div>
+<div class="container fullheight flex-centered">
+  <div class="columns">
+    <article id="registerpage" class="column col-12">
+      <div class="columns">
+        <form id="registerform" class="registerbox formbox column col-12 panel" action="<?php echo $this->getConfig("baseurl") ?>/register/" method="POST">
+          <div class="panel-header text-center">
+            <div class="panel-title">
+              <figure class="avatar avatar-xl p-2">
+                <i class="icon icon-emoji icon-3x"></i>
+              </figure>
+              <div class="text-large text-bold">Register</div>
+            </div>
+          </div>
+          <div class="panel-nav">
+          </div>
+          <div class="panel-body">
+            <div class="fieldset form-group">
+              <div id="ff-email" class="formfield">
+                <label class="form-label" for="email">Email</label>
+                <input type="text" name="email" id="email" class="col-12 noLastPassStyle" placeholder="email">
+              </div>
+              <div id="ff-pass" class="formfield">
+                <label class="form-label" for="pass">Passphrase</label>
+                <input type="password" name="pass" id="pass" class="col-12 noLastPassStyle" placeholder="pass phrase">
+              </div>
+            </div>
+          </div>
+          <div class="panel-footer">
+            <div class="fieldset form-group">
+              <div id="ff-login" class="formfield">
+                <input type="submit" name="register-button" value="Register" class="btn btn-primary col-12" tabindex=0>
+              </div>
+            </div>
+            <div class="fieldset form-group">
+              <div class="ff-cancel" class="formfield">
+                <a href="/" type="submit" name="cancel-button" value="Cancel" class="btn btn col-12" tabindex=0>Cancel</a>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </article>
   </div>
-  <?php
-  setMessages("errors",$data);
-  setMessages("messages",$data);
-  ?>
-  <div class="container wimpy">
-    <div class="registerbox formbox">
-      <form id="registerform" action="<?php echo $this->getConfig("baseurl") ?>/register/" method="POST">
-        <div class="fieldset">
-          <div id="ff-email" class="formfield">
-            <input type="text" name="email" id="email" placeholder="email">
-          </div>
-          <div id="ff-pass" class="formfield">
-            <input type="password" name="pass" id="pass" placeholder="pass phrase">
-          </div>
-          <div id="ff-submit" class="formfield">
-            <input type="submit" value="register" class="primary">
-          </div>
-        </div>
-      </form>
-    </div>
-  </div>
-</article>
+</div>
+

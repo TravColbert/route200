@@ -17,38 +17,28 @@
   <link rel="icon" type="image/png" sizes="32x32" href="<?php echo $this->getConfig("baseurl") ?>/public/img/favicons/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="96x96" href="<?php echo $this->getConfig("baseurl") ?>/public/img/favicons/favicon-96x96.png">
   <link rel="icon" type="image/png" sizes="16x16" href="<?php echo $this->getConfig("baseurl") ?>/public/img/favicons/favicon-16x16.png">
-  <link rel="manifest" href="<?php echo $this->getConfig("baseurl") ?>/manifest.webmanifest">
+  
+  <!-- PHPHT CSS -->
+  <link rel="stylesheet" type="text/css" media="screen" href="<?php echo $this->getConfig("baseurl") ?>/public/css/phpht.css">
+
+  <!-- Spectre CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre-icons.min.css">
+
+  <!-- <link rel="manifest" href="<?php echo $this->getConfig("baseurl") ?>/manifest.webmanifest"> -->
   <meta name="msapplication-TileColor" content="#ffffff">
   <meta name="msapplication-TileImage" content="<?php echo $this->getConfig("baseurl") ?>/public/img/favicons/ms-icon-144x144.png">
   <meta name="theme-color" content="#ffffff">
 
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.5.0.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
-  <!-- <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script> -->
-  <!-- <script src="https://kit.fontawesome.com/d5c73f28c4.js" crossorigin="anonymous"></script> -->
-  <link rel="stylesheet" type="text/css" media="screen" href="<?php echo $this->getConfig("baseurl") ?>/public/css/phpht.css">
-  <script>
-    /**
-     * PAGE FUNCTIONS
-     */
-    function ready (fn) {
-      if (document.readyState !== 'loading') {
-        fn()
-      } else {
-        document.addEventListener('DOMContentLoaded', fn)
-      }
-    }
-  </script>
+
 </head>
 <?php
+$class="";
 if(!$this->isLoggedIn()) {
-?>
-<body class="backgroundsplash">
-<?php
-} else {
-?>
-<body>
-<?php
+  $class .= "backgroundsplash";
 }
-
+?>
+<body class="<?php echo $class; ?>">
