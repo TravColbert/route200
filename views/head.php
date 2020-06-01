@@ -1,7 +1,9 @@
-<html>
+<!DOCTYPE html>
+<html lang="<?php echo $this->setLang() ?>">
 <head>
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
   <title><?php echo $pageTitle; ?></title>
 
   <link rel="apple-touch-icon" sizes="57x57" href="<?php echo $this->getConfig("baseurl") ?><?php echo $this->getConfig("baseurl") ?>/public/img/favicons/apple-icon-57x57.png">
@@ -31,8 +33,8 @@
   <meta name="theme-color" content="#ffffff">
 
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <script src="https://code.jquery.com/jquery-3.5.0.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+  <script src="https://code.jquery.com/jquery-3.5.0.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js" crossorigin="anonymous"></script>
 
 </head>
 <?php
