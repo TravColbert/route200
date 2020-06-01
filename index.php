@@ -1,5 +1,5 @@
 <?php
-$config = parse_ini_file("./config/config.ini");
+$config = (file_exists("./config/config.ini")) ? parse_ini_file("./config/config.ini") : null;
 openlog((isset($config["appname"])) ? $config["appname"] : "phpht", LOG_PID, LOG_SYSLOG);
 
 $vendor = (isset($config["vendor"])) ? $config["vendor"] : "/vendor";
@@ -7,38 +7,17 @@ require __DIR__ . $vendor . '/autoload.php';
 
 $libdir = (isset($config["libdir"])) ? $config["libdir"] : "/lib";
 require_once(__DIR__ . $libdir . "/phpht.php");
-$phpht = new Phpht($config);
+$phpht = new PHPHT($config);
 
 // Setup what folder your static assets are pulled from (e.g. 'public')
 $phpht->router->assets();
 
-require_once(__DIR__ . $libdir . "/PHPHT_Model.php");
+require_once(__DIR__ . $libdir . "/phpht_model.php");
 
-/**
- * Custom functions can go here
- * 
- */
+$users = new User($phpht);
+$domains = new Domain($phpht);
+$roles = new Role($phpht);
 
-/**
- * Require and add your models here.
- * 
- * Something like this works:
- * 
-require_once("lib/My_Model.php");
- *
- * Now you can instantiate your model something like this:
- * 
-$my_model = new My_Model();
- *
- * Now my my_model is available to be used in routes.
- * By default if you do this: my_app_root/my_model/
- * phpht will try to run a ->getModel() function on that
- * model if it exists.
- require_once("lib/Report.php");
- *
- * Or... you can put the above types of directives in the includes.php 
- * file and include it. 
- */
 include "includes/includes.php";
 
 /**
@@ -102,6 +81,9 @@ $phpht->router->get("/^\\/logout\\/?$/",array($phpht,"goLogout"));
 $phpht->router->get("/^\\/register\\/?$/",array($phpht,"viewRegister"));
 $phpht->router->get("/^\\/verify\\/?$/",array($phpht,"goVerify"));
 $phpht->router->get("/^\\/settings\\/?$/",array($phpht,"goSettings"));
+$phpht->router->get("/^\\/admin\\/?$/",array($phpht,"goAdmin"));
+$phpht->router->get("/^\\/myusers\\/?$/",array($phpht,"goUsers"));
+
 
 /**
 * Your custom routes go here
@@ -112,18 +94,22 @@ include "routes/routes.php";
  * These are generic routes that work with basic, non-compound objects
  * As soon as you define them and create the model, they should Just Work
  */
+$phpht->router->get("/^\\/([^\\/]+)\\/(edit)\\/([0-9]+)\\/?/",array($phpht,"getForm"));
+$phpht->router->get("/^\\/([^\\/]+)\\/(create)\\/?/",array($phpht,"getForm"));
 $phpht->router->get("/^\\/([^\\/]+)\\/new\\/?$/","setupNewObject");
 $phpht->router->get("/^\\/([^\\/]+)\\/([0-9]+)\\/edit\\/?$/","toForm");
-$phpht->router->get("/^\\/([^\\/]+)\\/([0-9]+)\\/?$/",array($phpht,"getItem"));
+$phpht->router->get("/^\\/([^\\/]+)\\/ui\\/([^\\/]+)\\/?$/",array($phpht,"getUIElement"));
+$phpht->router->get("/^\\/([^\\/]+)\\/([0-9]+)\\/?$/",array($phpht,"getRead"));
 $phpht->router->get("/^\\/([^\\/]+)\\/(json)\\/?$/",array($phpht,"getItemsJson"));
-$phpht->router->get("/^\\/([^\\/]+)\\/?$/",array($phpht,"getModelHome"));
+$phpht->router->get("/^\\/([^\\/]+)\\/?$/",array($phpht,"getRead"));
 
 $phpht->router->post("/^\\/register\\/?$/",array($phpht,"postRegister"));
 $phpht->router->post("/^\\/login\\/?$/",array($phpht,"postLogin"));
-$phpht->router->post("/^\\/([^\\/]+)\\/([0-9]+)\\/?$/","edit");
-$phpht->router->post("/^\\/([^\\/]+)\\/?$/","add");
+$phpht->router->post("/^\\/([^\\/]+)\\/?$/",array($phpht,"postCreate"));
 
-$phpht->router->delete("/^\\/([^\\/]+)\\/([0-9]+)\\/?$/","delete");
+$phpht->router->put("/^\\/([^\\/]+)\\/([0-9]+)\\/?$/",array($phpht,"putEdit"));
+
+$phpht->router->delete("/^\\/([^\\/]+)\\/([0-9]+)\\/?$/",array($phpht,"deleteDelete"));
 
 /**
  * THE ROOT ROUTE
