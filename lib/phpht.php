@@ -8,8 +8,10 @@ Class PHPHT {
 
   function __construct($config) {
     $this->config = $config;
+    $this->setSessionCookieSettings();
     require_once("lib/phpht_router.php");
     $this->router = new Router(null,$this);
+    $this->applang = $config["lang"] ?? "en";
     $this->appname = (isset($config["appname"])) ? $config["appname"] : "PHPHT - Unconfigured";
     $this->views = (isset($config["views"])) ? $config["views"] : "views";
     $this->assets = (isset($config["assets"])) ? $config["assets"] : "public";
@@ -47,6 +49,7 @@ Class PHPHT {
   }
 
   public function asJSON($data) {
+    $this->setBaseHeaders();
     header('Content-Type: application/json;charset=utf-8');
     if(!isset($resultArray["errors"])) $resultArray["errors"] = array();
     if(isset($data["response_code"]) && $data["response_code"]) {
@@ -486,6 +489,16 @@ Class PHPHT {
     header("Location: $url");
   }
 
+  public function setBaseheaders() {
+    syslog(LOG_INFO,"Setting base headers");
+    header('Strict-Transport-Security: max-age=63072000');
+    header('X-Content-Type-Options: nosniff');
+    header("Content-Security-Policy: frame-ancestors 'none'");
+    header('X-Frame-Options: DENY');
+    header('X-XSS-Protection: 1; mode=block');
+    return;
+  }
+
   public function setContentType($matches) {
     $fileParts = explode(".",$matches[2]);
     $fileExtension = array_pop($fileParts);
@@ -521,6 +534,19 @@ Class PHPHT {
     return;
   }
 
+  private function setLang() {
+    return $this->applang;
+  }
+
+  private function setSessionCookieSettings() {
+    syslog(LOG_INFO,"Serving secure cookies");
+    \ini_set('session.cookie_domain', $this->appurl);
+    \ini_set('session.cookie_path','/');
+    \ini_set('session.cookie_httponly', 1);
+    \ini_set('session.cookie_secure', 1);
+    return;
+  }
+
   public function view($template=null,$data=[]) {
     $template = (isset($template)) ? $template : $this->home;
     if(!file_exists($this->views."/".$template)) {
@@ -531,6 +557,7 @@ Class PHPHT {
       if(array_key_exists("pageTitle",$data)) $pageTitle = $data['pageTitle'];
     }
     $data["appname"] = $this->appname;
+    $this->setBaseHeaders();
     syslog(LOG_INFO,"Getting view: $template");
     include($this->views."/head.php");
     include($this->views."/navbar.php");
