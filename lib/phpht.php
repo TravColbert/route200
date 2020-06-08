@@ -5,6 +5,7 @@ Class PHPHT {
   public $router;
   protected $config;
   protected $manifest;
+  private $appurl;
 
   function __construct($config) {
     $this->config = $config;
