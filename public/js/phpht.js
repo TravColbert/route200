@@ -272,10 +272,15 @@ if(document.getElementById('admin-domains')) {
       })
     },
     template: `
-      <div id="admin-domains" v-show="domainsExist">
-        <div class="h4">Domains</div>
-        <domain-item v-for="(domain,index) in domains" :domain="domain" :key="index"></domain-item>
-        <domain-create-link v-show="createLinkDomains" :href="createLinkDomains"></domain-create-link>
+      <div id="admin-domains" v-show="domainsExist" class="accordion">
+        <input type="checkbox" id="admin-domains-1" name="admin-accordion" hidden>
+        <label class="accordion-header" for="admin-domains-1">
+          <div class="h5"><i class="icon icon-arrow-right mr-1"></i><span class="badge" :data-badge="domains.length">Domains</span></div>
+        </label>
+        <div class="accordion-body">
+          <domain-item v-for="(domain,index) in domains" :domain="domain" :key="index"></domain-item>
+          <domain-create-link v-show="createLinkDomains" :href="createLinkDomains"></domain-create-link>
+        </div>
       </div>
     `
   })
@@ -315,10 +320,15 @@ if(document.getElementById('admin-users')) {
       })
     },
     template: `
-      <div id="admin-users" v-show="usersExist">
-        <div class="h4">Users</div>
-        <user-item v-for="(user,index) in users" :user="user" :key="index"></user-item>
-        <user-create-link v-show="createLinkUsers" :href="createLinkUsers"></user-create-link>
+      <div id="admin-users" v-show="usersExist" class="accordion">
+        <input type="checkbox" id="admin-users-1" name="admin-accordion" hidden>
+        <label class="accordion-header" for="admin-users-1">
+          <div class="h5"><i class="icon icon-arrow-right mr-1"></i><span class="badge" :data-badge="users.length">Users</span></div>
+        </label>
+        <div class="accordion-body">
+          <user-item v-for="(user,index) in users" :user="user" :key="index"></user-item>
+          <user-create-link v-show="createLinkUsers" :href="createLinkUsers"></user-create-link>
+        </div>
       </div>
     `
   })
