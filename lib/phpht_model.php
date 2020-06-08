@@ -268,14 +268,11 @@ Class PHPHT_Model {
       $data["type"] = $registryObject["resourceType"];
       $data["errors"] = [];
     } else {
-      syslog(LOG_INFO,"INSERT fail");
-      // $dbgMsg = $sqlstmt->debugDumpParams();
       $errMsg = $sqlstmt->errorInfo();
+      syslog(LOG_INFO,"INSERT fail: " . print_r($errMsg, TRUE));
       $data["response_code"] = 409;
       $data["errors"][] = "failed to create object for \"{$values[$registryObject["resourceNameField"]]}\"";
-      $data["errors"][] = "(object probably already exists)";
       $data["errors"][] = $errMsg;
-      // $data["errors"][] = $dbgMsg;
     }
     return $data;
   }
