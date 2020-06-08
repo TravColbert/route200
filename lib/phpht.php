@@ -48,6 +48,23 @@ Class PHPHT {
     );
   }
 
+  public function addRoleForUserById($userId, $role) {
+    $data = ["messages" => [], "errors" => []];
+    try {
+      syslog(LOG_INFO,"Attempt apply: Role: $role applied to user: $userId");
+      $this->auth->admin()->addRoleForUserById($userId, $role);
+      $data["messages"][] = "Role: $role applied to user: $userId";
+    }
+    catch (\Delight\Auth\UnknownIdException $e) {
+      $data["errors"][] = "Failed to add role";
+    }
+    return $data;
+  }
+
+  public function addUserToDomainById($userId, $domainId) {
+    
+  }
+
   public function asJSON($data) {
     $this->setBaseHeaders();
     header('Content-Type: application/json;charset=utf-8');
@@ -57,6 +74,26 @@ Class PHPHT {
     }
     $jsonString = json_encode($data);
     echo $jsonString;
+  }
+
+  public function checkAuth() {
+    syslog(LOG_INFO,"checking if user is authenticated...");
+    if($this->auth->isLoggedIn()) {
+      syslog(LOG_INFO,"user is authenticated");
+      return $this->auth->getUserId();
+    }
+    return $this->goLogin();
+  }
+
+  public function checkAuthRole($targetRole) {
+    syslog(LOG_INFO,"checking if user has the {$targetRole} role");
+    return $this->auth->hasRole($targetRole);
+  }
+
+  public function checkAuthDomain($targetDomainId) {
+    global $users;
+    syslog(LOG_INFO,"checking if user is in the domain ID: {$targetDomainId}");
+    return $users->userInDomainId($this->auth->getUserId(),$targetDomainId);
   }
 
   public function dbLastInsertId() {
@@ -78,8 +115,51 @@ Class PHPHT {
     return $this->db->errorInfo();
   }
 
+  public function deleteDelete($matches) {
+    global ${$matches[1]};
+    $data = ${$matches[1]}->deleteDelete($matches);
+    return $this->asJSON($data);
+  }
+
+  public function extractPut() {
+    // $_PUT = file_get_contents("php://input");
+    return json_decode(file_get_contents("php://input"), true);
+  }
+
   public function getConfig($var) {
     return $this->config[$var];
+  }
+
+  public function getCurrentDomain($userId=null) {
+    global $users;
+    syslog(LOG_INFO,"getting user's domain ID");
+    if($userId===null) $userId = $this->auth->getUserId();
+    return $users->getUserDomain($userId);
+  }
+
+  public function getDateTime($dateTimeString=null) {
+    return new DateTime($dateTimeString);
+  }
+
+  public function getDiag($matches) {
+    echo "<pre>";
+    if($this->db) {
+      echo "DB connection client version: ".$this->db->getAttribute(PDO::ATTR_CLIENT_VERSION)."\n";
+    }
+    echo "URL Handler-checker\n";
+    echo "Matches:\n";
+    if($matches[2]) {
+      $path = explode("/",$matches[2]);
+      array_shift($path);
+      array_splice($matches, 2, 1, $path);
+    }
+    for($c=0;$c<count($matches);$c++) {
+      echo "Match ".$c." => ".$matches[$c]."\n";
+    }
+    echo "Query String Processing:\n";
+    var_dump($_GET);
+    var_dump($_SERVER['QUERY_STRING']);
+    echo "</pre>";
   }
 
   public function getFavicon($matches) {
@@ -124,11 +204,6 @@ Class PHPHT {
     if(isset($resultArray['result'])) syslog(LOG_INFO,"Result count: ".count($resultArray['result']));
     return $this->asJSON($resultArray);
   }
-  
-  public function getVal($var) {
-    syslog(LOG_INFO,"Returning: ".$this->$var);
-    return $this->$var;
-  }
 
   public function getStaticFile($path) {
     syslog(LOG_INFO,"Serving static object: {$path}");
@@ -171,67 +246,19 @@ Class PHPHT {
     readFile($path);
   }
 
-  public function getDateTime($dateTimeString=null) {
-    return new DateTime($dateTimeString);
-  }
-
-  public function getDiag($matches) {
-    echo "<pre>";
-    if($this->db) {
-      echo "DB connection client version: ".$this->db->getAttribute(PDO::ATTR_CLIENT_VERSION)."\n";
-    }
-    echo "URL Handler-checker\n";
-    echo "Matches:\n";
-    if($matches[2]) {
-      $path = explode("/",$matches[2]);
-      array_shift($path);
-      array_splice($matches, 2, 1, $path);
-    }
-    for($c=0;$c<count($matches);$c++) {
-      echo "Match ".$c." => ".$matches[$c]."\n";
-    }
-    echo "Query String Processing:\n";
-    var_dump($_GET);
-    var_dump($_SERVER['QUERY_STRING']);
-    echo "</pre>";
-  }
-
-
-  public function getUserId() {
-    return $this->auth->getUserId();
-  }
-
   public function getUIElement($matches) {
     global ${$matches[1]};
     $resultArray = ${$matches[1]}->getUIElement($matches);
     return $this->asJSON($resultArray);
   } 
 
-  public function checkAuth() {
-    syslog(LOG_INFO,"checking if user is authenticated...");
-    if($this->auth->isLoggedIn()) {
-      syslog(LOG_INFO,"user is authenticated");
-      return $this->auth->getUserId();
-    }
-    return $this->goLogin();
+  public function getUserId() {
+    return $this->auth->getUserId();
   }
-
-  public function checkAuthRole($targetRole) {
-    syslog(LOG_INFO,"checking if user has the {$targetRole} role");
-    return $this->auth->hasRole($targetRole);
-  }
-
-  public function getCurrentDomain($userId=null) {
-    global $users;
-    syslog(LOG_INFO,"getting user's domain ID");
-    if($userId===null) $userId = $this->auth->getUserId();
-    return $users->getUserDomain($userId);
-  }
-
-  public function checkAuthDomain($targetDomainId) {
-    global $users;
-    syslog(LOG_INFO,"checking if user is in the domain ID: {$targetDomainId}");
-    return $users->userInDomainId($this->auth->getUserId(),$targetDomainId);
+  
+  public function getVal($var) {
+    syslog(LOG_INFO,"Returning: ".$this->$var);
+    return $this->$var;
   }
 
   public function goAuthCheck($userName = 'superuser') {
@@ -323,37 +350,6 @@ Class PHPHT {
     }
   }
 
-  public function isLoggedIn() {
-    if($this->auth->isLoggedIn()) {
-      return $this->auth->getUserId();
-    }
-    return FALSE;
-  }
-
-  public function isAuthorized($roles) {
-    foreach($roles as $role) {
-      if($this->hasRole($role)) return TRUE;
-    }
-    return FALSE;
-  }
-  
-  public function addRoleForUserById($userId, $role) {
-    $data = ["messages" => [], "errors" => []];
-    try {
-      syslog(LOG_INFO,"Attempt apply: Role: $role applied to user: $userId");
-      $this->auth->admin()->addRoleForUserById($userId, $role);
-      $data["messages"][] = "Role: $role applied to user: $userId";
-    }
-    catch (\Delight\Auth\UnknownIdException $e) {
-      $data["errors"][] = "Failed to add role";
-    }
-    return $data;
-  }
-
-  public function addUserToDomainById($userId, $domainId) {
-    
-  }
-
   public function hasRole($role) {
     return $this->auth->hasRole($role);
   }
@@ -366,24 +362,20 @@ Class PHPHT {
     return $this->auth->hasAllRoles($roles);
   }
 
-  public function extractPut() {
-    // $_PUT = file_get_contents("php://input");
-    return json_decode(file_get_contents("php://input"), true);
+  public function isAuthorized($roles) {
+    foreach($roles as $role) {
+      if($this->hasRole($role)) return TRUE;
+    }
+    return FALSE;
   }
 
-  public function putEdit($matches) {
-    global ${$matches[1]};
-    $putData = $this->extractPut();
-    $data = ${$matches[1]}->putEdit($matches,$putData);
-    return $this->asJSON($data);
+  public function isLoggedIn() {
+    if($this->auth->isLoggedIn()) {
+      return $this->auth->getUserId();
+    }
+    return FALSE;
   }
-  
-  public function deleteDelete($matches) {
-    global ${$matches[1]};
-    $data = ${$matches[1]}->deleteDelete($matches);
-    return $this->asJSON($data);
-  }
-    
+
   public function postCreate($matches) {
     global ${$matches[1]};
     $data = ${$matches[1]}->postCreate($_POST);
@@ -483,6 +475,13 @@ Class PHPHT {
     }
   }
 
+  public function putEdit($matches) {
+    global ${$matches[1]};
+    $putData = $this->extractPut();
+    $data = ${$matches[1]}->putEdit($matches,$putData);
+    return $this->asJSON($data);
+  }
+
   public function redirectTo($url = '/') {
     $url = (strlen($url)>0) ? $url : '/'; 
     syslog(LOG_INFO,"Redirecting to: $url");
@@ -538,6 +537,19 @@ Class PHPHT {
     return $this->applang;
   }
 
+  public function setMessages($type,$data) {
+    echo "<div id=\"${type}box\" class='messagebox $type column col-12'>";
+    if(isset($data[$type])) {
+      foreach($data[$type] as $msg) {
+        echo "<div id='messageToast' class='toast'>";
+        echo "<button class='btn btn-clear float-right' onClick=\"hideElement('#messageToast')\"></button>";
+        echo $msg;
+        echo "</div>";
+      }
+    }  
+    echo "</div>";
+  }
+
   private function setSessionCookieSettings() {
     syslog(LOG_INFO,"Serving secure cookies");
     \ini_set('session.cookie_domain', $this->appurl);
@@ -589,126 +601,5 @@ Class PHPHT {
   public function viewRegister() {
     syslog(LOG_INFO,"Showing registration (sign-up) page");
     return $this->view("register.php");
-  }
-
-  public function setMessages($type,$data) {
-    echo "<div id=\"${type}box\" class='messagebox $type column col-12'>";
-    if(isset($data[$type])) {
-      foreach($data[$type] as $msg) {
-        echo "<div id='messageToast' class='toast'>";
-        echo "<button class='btn btn-clear float-right' onClick=\"hideElement('#messageToast')\"></button>";
-        echo $msg;
-        echo "</div>";
-      }
-    }  
-    echo "</div>";
   }  
 }
-
-/*
-function viewAsJSON($objType,$objs,$errors) {
-  header('Content-Type: application/json');
-  if($errors) {
-    $returnObj = json_encode(array(
-      $objType => array(),
-      "errors" => $errors
-    ));
-  } else {
-    $returnObj = json_encode(array(
-      $objType => $objs->toArray(),
-      "errors" => array(),
-    ));
-  }
-  echo $returnObj;
-}
-
-function toJSON($matches) {
-  global ${$matches[1]};
-  syslog(LOG_DEBUG,"Converting ".$matches[1]." to JSON");
-  $id = (count($matches)>=3) ? $matches[2] : null;
-  echo ${$matches[1]}->toJSON($id);
-  return;
-}
-
-function setupNewObject($matches) {
-  global $phpht;
-  //if(!$phpht->checkAuthentication()) exit;
-  $pageTitle = "New Object";
-  view("new-$matches[1].php");
-  return;
-}
-*/
-
-// function listItems($matches) {
-//   global ${$matches[1]};
-//   //echo "Listing items for: ".$matches[1]."<br>\n";
-//   $id = (count($matches)>=3) ? $matches[2] : null;
-//   $count = ${$matches[1]}->collect($id);
-//   //echo "Collected ".$count->count()." objects<br>\n";
-//   viewAsJSON($matches[1],${$matches[1]},null);
-//   return;
-// }
-
-/**
- * EXPORT FUNCTIONS
- */
-
-/*
-function getExporterObject($matches) {
-  $resultArray = getModel($matches);
-  require_once('lib/excelexport.php');
-  $exporter = new ExcelExport($resultArray['result']);
-  // Might be nice to put a heading row in the data...
-  $exporter->insertHeaderRow();
-  $exporter->toExcel();
-  return $exporter;
-};
-
-function exportToSpreadsheet($matches) {
-  syslog(LOG_INFO,"Exporting to spreadsheet");
-  $exporter = getExporterObject($matches);
-  $exporter->downloadExcel();
-  return;
-}
-
-function exportToCSV($matches) {
-  syslog(LOG_INFO,"Exporting to CSV");
-  $exporter = getExporterObject($matches);
-  $exporter->downloadCSV();
-  return;
-}
-
-function toForm($matches) {
-  global ${$matches[1]};
-  echo ${$matches[1]}->toForm($matches[2]);
-  return;
-}
-
-function edit($matches) {
-  global ${$matches[1]};
-  if(${$matches[1]}->edit($_POST)) toJSON($matches);
-  return;
-}
-
-function add($matches) {
-  global ${$matches[1]};
-  if($id = ${$matches[1]}->add($_POST)) {
-    syslog(LOG_DEBUG,"added record ID: ".$id);
-    listItems(array(null,$matches[1],$id));
-  } else {
-    viewAsJSON("transactions",null,"Could not add record");
-  }
-  return;
-}
-
-function delete($matches) {
-  global ${$matches[1]};
-  if(${$matches[1]}->delete(${$matches[2]})) {
-    log("record ".${$matches[2]}." deleted");
-    listItems(array(null,$matches[1],$id));
-  } else {
-    viewAsJSON("transactions",null,"Could not delete record");
-  }
-  return;
-}
-*/
