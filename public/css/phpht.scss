@@ -1,34 +1,25 @@
+$top-padding: 40px;
+
+html, body {
+  height: 100%;
+}
+
 .hidden {
   visibility: hidden;
   display: none;
 }
 
-// nav {
-//   ul {
-//     // @extend .flexy-row;
-//     justify-content: flex-end;
-//     list-style-type: none;
-//     margin: 0;
-//     padding: 0;
-//     li {
-//       display: flex;
-//       flex-direction: row;
-//       margin: 0 8px 0;
-//       a, label {
-//         flex-direction: row;
-//         display: flex;
-//         align-items: center;
-//       }
-//     }
-//   }
-//   #show-menu:not(:checked) ~ li.menu-link {
-//     display: none;
-//     visibility: hidden;
-//   }
-// }
-
 header.navbar {
   background-color: #fff;
+  z-index: 99;
+}
+
+.navbar-brand {
+  font-weight: 500;
+}
+
+article:first-of-type {
+  padding-top: $top-padding;
 }
 
 .fullheight {

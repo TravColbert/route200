@@ -1,9 +1,19 @@
+html, body {
+  height: 100%; }
+
 .hidden {
   visibility: hidden;
   display: none; }
 
 header.navbar {
-  background-color: #fff; }
+  background-color: #fff;
+  z-index: 99; }
+
+.navbar-brand {
+  font-weight: 500; }
+
+article:first-of-type {
+  padding-top: 40px; }
 
 .fullheight {
   height: 100%; }
