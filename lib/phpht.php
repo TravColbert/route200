@@ -266,7 +266,7 @@ Class PHPHT {
     syslog(LOG_INFO,"starting auth-check");
     try {
       syslog(LOG_INFO,"initial user registered?");
-      $userId = $this->auth->register("su@".$this->appurl,"test123!","superuser",null);
+      $userId = $this->auth->register("su@".$this->appurl,"---","superuser",null);
       syslog(LOG_INFO,"initial user created");
       $this->auth->admin()->addRoleForUserById($userId,\Delight\Auth\Role::SUPER_ADMIN);
       syslog(LOG_INFO,"roles applied to initial user " . $userId);
