@@ -1,4 +1,4 @@
-<div class="container fullheight flex-centered">
+<div class="container main fullheight flex-centered">
   <div class="columns">
     <article id="loginpage" class="column col-12">
       <div class="columns">

@@ -1,8 +1,8 @@
-<header class="col-12 navbar p-fixed p-sticky">
+<header class="col-12 navbar p-fixed">
   <section class="navbar-section">
     <a href="<?php echo $this->getConfig("baseurl") ?>/" class="navbar-brand mr-2"><?php echo $data["appname"] ?></a>
   </section>
-  <section>
+  <section class="navbar-section">
     <?php if($this->isLoggedIn()) { ?>
       <a href="<?php echo $this->getConfig("baseurl") ?>/admin/" class="btn btn-link">admin</a>
       <a href="<?php echo $this->getConfig("baseurl") ?>/logout/" class="btn btn-link">logout</a>
