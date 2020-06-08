@@ -41,6 +41,8 @@ article:first-of-type {
 
 .address_item:not(:last-child) {
   border-bottom: 1px dotted #ececec; }
+  .address_item:not(:last-child) .extra {
+    font-size: smaller; }
 
 select {
   padding: 1px 0 1px 2px;

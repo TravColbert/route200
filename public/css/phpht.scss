@@ -46,6 +46,9 @@ article:first-of-type {
 
 .address_item:not(:last-child) {
   border-bottom: 1px dotted #ececec;
+  .extra {
+    font-size: smaller;
+  }
 }
 
 select {
