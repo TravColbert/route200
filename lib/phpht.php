@@ -439,12 +439,16 @@ Class PHPHT {
               'CustomID' => "AppGettingStartedTest"
             ]
           ]
-        ];
-        $response = $mj->post(\Mailjet\Resources::$Email, ['body' => $body]);
-        if($response->success()) {
+  	];
+	$response = $mj->post(\Mailjet\Resources::$Email, ['body' => $body]);
+	//error_log(print_r($response->getData(),TRUE));
+	if($response->success()) {
+	  syslog(LOG_INFO,"verification email send success");
           $data["response_code"] = 201;
           $data["messages"][] = "User ".$_POST['email']." registered (but not verified)";
-        } else {
+	} else {
+	  syslog(LOG_INFO,"failed to send verification email");
+	  error_log("failed to send verification email");
           $data["response_code"] = 409;
           $data["errors"][] = "failed to register user";  
         }
