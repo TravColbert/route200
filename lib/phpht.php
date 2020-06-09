@@ -200,8 +200,8 @@ Class PHPHT {
   }
 
   public function getRead($matches) {
-    if(!isset(${$matches[1]})) return $this->view404();
     global ${$matches[1]};
+    if(!isset(${$matches[1]})) return $this->view404();
     $resultArray = ${$matches[1]}->getRead($matches);
     if(isset($resultArray['result'])) syslog(LOG_INFO,"Result count: ".count($resultArray['result']));
     return $this->asJSON($resultArray);
