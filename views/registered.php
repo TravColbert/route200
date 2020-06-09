@@ -1,23 +1,24 @@
 <article id="mainwelcome" class="fullpage">
-  <div class="container">
-    <div class="mainblurb">
-      <div>User Registration</div>
-      <div>Registration Status</div>
-      <hr/>
+  <div class="empty">
+    <div class="empty-icon">
+      <i class="icon icon-check icon-4x"></i>
     </div>
 <?php
   if($data["response_code"] === 201) {
 ?>
-    <div class="subblurb"><?php echo $data["messages"][0] ?> Please check your email to complete verification.</div>
+    <p class="empty-title h1">Registered</p>
+    <p class="empty-subtitle">Good job! Please check your email to complete verification.</p>
 <?php
   } else {
 ?>
-    <div class="subblurb">There was an error registering the user. <a href="">Try again</a>.</div>
+    <p class="empty-title h3">Sorry!</p>
+    <p class="empty-subtitle">We ran into a problem registering your account.</p>
+    <p class="empty-subtitle">It might be because the account name has already been registered.</p>
 <?php
   }
-?>
-    <div id="loginbutton">
-      <a href="<?php echo $this->baseurl; ?>" class="buttonstyle compact">back home</a>
+?>    
+    <div class="empty-action">
+      <a href="/" class="btn btn-primary">C'mon. Let's go back home!</a>
     </div>
   </div>
 </article>
