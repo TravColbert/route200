@@ -419,23 +419,23 @@ Class PHPHT {
         $mj = new \Mailjet\Client($this->config["mailApiKey"],$this->config["mailSecretKey"],true,['version' => 'v3.1']);
         syslog(LOG_INFO, "user registered - user must be verified");
         syslog(LOG_INFO, "sending email verification");
-        $verificationURL = 'https://froogle.io/verify?selector=' . \urlencode($selector) . '&token=' . \urlencode($token);
+        $verificationURL = 'https://' . $this->appurl .'/verify?selector=' . \urlencode($selector) . '&token=' . \urlencode($token);
         $body = [
           'Messages' => [
             [
               'From' => [
-                'Email' => "support@froogle.io",
-                'Name' => "Froogle Support"
+                'Email' => "support@" . $this->appurl,
+                'Name' => $this->appname . " Support"
               ],
               'To' => [
                 [
                   'Email' => $_POST["email"],
-                  'Name' => "Trav"
+                  'Name' => "Support"
                 ]
               ],
-              'Subject' => "Greetings from Froogle.io.",
-              'TextPart' => "Hi ".$_POST['email'].", welcome to froogle.io! Please go to ".$verificationURL." to verify your account. Thanks!",
-              'HTMLPart' => "<h3>Hi ".$_POST['email'].", welcome to <a href='https://froogle.io/'>froogle.io</a>!</h3><br />Click <a href='".$verificationURL."'>this link</a> to verify your account. Start managing your money like a true boss!",
+              'Subject' => "Greetings from " . $this->appname . ".",
+              'TextPart' => "Hi ".$_POST['email'].", welcome to " . $this->appname . "! Please go to ".$verificationURL." to verify your account. Thanks!",
+              'HTMLPart' => "<h3>Hi ".$_POST['email'].", welcome to <a href='https://" . $this->appname . "/'>" . $this->appname . "</a>!</h3><br />Click <a href='".$verificationURL."'>this link</a> to verify your account.",
               'CustomID' => "AppGettingStartedTest"
             ]
           ]

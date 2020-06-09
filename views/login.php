@@ -16,7 +16,7 @@
           <div class="panel-body">
             <div class="fieldset form-group">
               <div id="ff-username" class="formfield">
-                <label class="form-label" for="username">Username</label>
+                <label class="form-label" for="username">Email</label>
                 <input type="text" name="username" id="username" class="col-12 noLastPassStyle" data-lpignore="true" placeholder="email" tabindex=0>
               </div>
               <div id="ff-pass" class="formfield">
