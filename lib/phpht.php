@@ -333,22 +333,30 @@ Class PHPHT {
 
   public function goVerify($matches) {
     syslog(LOG_INFO,"attempting to verify registration");
+    if(!isset($GET['selector']) || !isset($GET['token'])) {
+      syslog(LOG_INFO,"Someone tried to verify their email with a missing selector or token");
+      return $this->view();
+    }
     try {
-      $auth->confirmEmail($_GET['selector'], $_GET['token']);
+      $this->auth->confirmEmail($_GET['selector'], $_GET['token']);
       echo 'Email address has been verified';
       return $this->redirectTo($this->getConfig("baseurl"));
     }
     catch (\Delight\Auth\InvalidSelectorTokenPairException $e) {
-      die('Invalid token');
+      syslog(LOG_INFO,'Invalid token');
+      $this->view();
     }
     catch (\Delight\Auth\TokenExpiredException $e) {
-        die('Token expired');
+      syslog(LOG_INFO,'Token expired');
+      $this->view();
     }
     catch (\Delight\Auth\UserAlreadyExistsException $e) {
-        die('Email address already exists');
+      syslog(LOG_INFO,'Email address already exists');
+      $this->view();
     }
     catch (\Delight\Auth\TooManyRequestsException $e) {
-        die('Too many requests');
+      syslog(LOG_INFO,'Too many requests');
+      $this->view();
     }
   }
 
@@ -441,21 +449,21 @@ Class PHPHT {
               'CustomID' => "AppGettingStartedTest"
             ]
           ]
-  	];
-	$response = $mj->post(\Mailjet\Resources::$Email, ['body' => $body]);
-	//error_log(print_r($response->getData(),TRUE));
-	if($response->success()) {
-	  syslog(LOG_INFO,"verification email send success");
-          $data["response_code"] = 201;
-          $data["messages"][] = "User ".$_POST['email']." registered (but not verified)";
-	} else {
-	  syslog(LOG_INFO,"failed to send verification email");
-	  error_log("failed to send verification email");
-          $data["response_code"] = 409;
-          $data["errors"][] = "failed to register user";  
-        }
-        $this->view("registered.php",$data);
-      });
+  	    ];
+      $response = $mj->post(\Mailjet\Resources::$Email, ['body' => $body]);
+      //error_log(print_r($response->getData(),TRUE));
+      if($response->success()) {
+        syslog(LOG_INFO,"verification email send success");
+        $data["response_code"] = 201;
+        $data["messages"][] = "User ".$_POST['email']." registered (but not verified)";
+      } else {
+        syslog(LOG_INFO,"failed to send verification email");
+        error_log("failed to send verification email");
+        $data["response_code"] = 409;
+        $data["errors"][] = "failed to register user";  
+      }
+      $this->view("registered.php",$data);
+    });
       // Set user_domain mapping
       $dateTime = $this->getDateTime()->format('Y-m-d H:i:s');
       syslog(LOG_INFO,"DateTime is: ".$dateTime);
