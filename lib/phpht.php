@@ -333,7 +333,7 @@ Class PHPHT {
 
   public function goVerify($matches) {
     syslog(LOG_INFO,"attempting to verify registration");
-    if(!isset($GET['selector']) || !isset($GET['token'])) {
+    if(!isset($_GET['selector']) || !isset($_GET['token'])) {
       syslog(LOG_INFO,"Someone tried to verify their email with a missing selector or token");
       return $this->view();
     }
