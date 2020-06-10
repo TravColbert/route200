@@ -79,7 +79,7 @@ $phpht->router->get("/^\\/404\\/?$/",array($phpht,"view404"));
 $phpht->router->get("/^\\/login\\/?$/",array($phpht,"goLogin"));
 $phpht->router->get("/^\\/logout\\/?$/",array($phpht,"goLogout"));
 $phpht->router->get("/^\\/register\\/?$/",array($phpht,"viewRegister"));
-$phpht->router->get("/^\\/verify\\/?$/",array($phpht,"goVerify"));
+$phpht->router->get("/^\\/(verify)(\\/.+)*\\/?$/",array($phpht,"goVerify"));
 $phpht->router->get("/^\\/settings\\/?$/",array($phpht,"goSettings"));
 $phpht->router->get("/^\\/admin\\/?$/",array($phpht,"goAdmin"));
 $phpht->router->get("/^\\/myusers\\/?$/",array($phpht,"goUsers"));

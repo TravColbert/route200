@@ -420,7 +420,8 @@ Class PHPHT {
         $mj = new \Mailjet\Client($this->config["mailApiKey"],$this->config["mailSecretKey"],true,['version' => 'v3.1']);
         syslog(LOG_INFO, "user registered - user must be verified");
         syslog(LOG_INFO, "sending email verification");
-        $verificationURL = 'https://' . $this->appurl .'/verify?selector=' . \urlencode($selector) . '&token=' . \urlencode($token);
+        $verificationURL = 'https://' . $this->appurl .'/verify/?selector=' . \urlencode($selector) . '&token=' . \urlencode($token);
+        syslog(LOG_INFO, "verification URL: $verificationURL");
         $body = [
           'Messages' => [
             [
