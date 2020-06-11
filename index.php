@@ -17,6 +17,7 @@ require_once(__DIR__ . $libdir . "/phpht_model.php");
 $users = new User($phpht);
 $domains = new Domain($phpht);
 $roles = new Role($phpht);
+$userAppIds = new UserAppId($phpht);
 
 include "includes/includes.php";
 
@@ -73,7 +74,7 @@ include "includes/includes.php";
 $phpht->router->get("/^\\/manifest\.webmanifest$/",array($phpht,"getManifest"));
 $phpht->router->get("/^\\/favicon\.ico$/",array($phpht,"getFavicon"));
 $phpht->router->get("/^\\/_info\\/?$/",array($phpht,"viewInfo"));
-$phpht->router->get("/^\\/_auth\\/?$/",array($phpht,"goAuthCheck"));
+$phpht->router->get("/^\\/(_init)(\\/.+)*\\/?$/",array($phpht,"goInit"));
 $phpht->router->get("/^\\/(_diag)(\\/.+)*\\/?$/",array($phpht,"getDiag"));
 $phpht->router->get("/^\\/404\\/?$/",array($phpht,"view404"));
 $phpht->router->get("/^\\/login\\/?$/",array($phpht,"goLogin"));
