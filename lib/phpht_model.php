@@ -710,8 +710,25 @@ Class UserAppId extends PHPHT_Model {
       $values["appId"] = $this->phpht->createAppId(8);
       $values["currentDate"] = $this->phpht->getDateTime()->format('Y-m-d H:i:s');
       syslog(LOG_INFO,print_r($values,TRUE));
-      $result = $sqlstmt->execute($values);
-      return $result;
+      if($sqlstmt->execute($values)) {
+        return $sqlstmt->fetch(PDO::FETCH_ASSOC);
+      }
+    }
+    return false;
+  }
+
+  public function getUserAppId() {
+    $userId = $this->phpht->checkAuth();
+    if(!isset($userId)) return;
+    $sql = "SELECT appId FROM users_appids WHERE userId=:userId";
+    $sqlstmt = $this->phpht->dbPrepare($sql);
+    if($sqlstmt) {
+      $values = ["userId" => $userId];
+      if($sqlstmt->execute($values)) {
+        $row = $sqlstmt->fetch(PDO::FETCH_ASSOC);
+        syslog(LOG_INFO,print_r($row,TRUE));
+        return $row["appid"];
+      }
     }
     return false;
   }
