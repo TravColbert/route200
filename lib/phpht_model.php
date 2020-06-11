@@ -411,6 +411,9 @@ Class User extends PHPHT_Model {
           LEFT JOIN domains ON users_domains.domainId=domains.id 
         WHERE users.id=:userId",
         ["userId"]
+      ],
+      "readSU" => [
+        "SELECT id, email, username FROM users WHERE id=1 AND username='superuser'"
       ]
     );
   }
@@ -478,22 +481,6 @@ Class User extends PHPHT_Model {
     return false;
   }
 
-  // public function getUsersByDomainId($matches) {
-  //   $userId = $this->phpht->isLoggedIn();
-  //   $className = strtolower(get_class($this));
-  //   syslog(LOG_INFO,"attempting to get (read) of $className");
-  //   $action = $this->canDo($className,"readDomainMembership");
-  //   if(!$action) {
-  //     syslog(LOG_INFO,"Unauthorized to read $className");
-  //     $data["response_code"] = 403;
-  //     $data["errors"][] = "forbidden to read $className";
-  //     return $data;
-  //   }
-  //   syslog(LOG_INFO,"Authorized read action on $className: '$action'");
-
-  //   $sql = "SELECT $column_list_public FROM users JOIN users_domains ON users.id=users_domains.userId WHERE users_domains.domainId=:domainId"
-  // }
-
   public function userInDomainId($userId,$domainId) {
     $sql = "SELECT domains.id FROM users_domains JOIN domains ON users_domains.domainId=domains.id WHERE users_domains.userId=$userId AND users_domains.domainId=$domainId";
     $sqlstmt = $this->phpht->dbPrepare($sql);
@@ -520,6 +507,16 @@ Class User extends PHPHT_Model {
       $data["errors"][] = "failed to create user";
     }
     return $data;
+  }
+
+  public function superuserExists() {
+    $sql = $this->objectRegistry["user"]["readSU"][0];
+    $sqlstmt = $this->phpht->dbPrepare($sql);
+    if($sqlstmt->execute()) {
+      $row = $sqlstmt->fetch(PDO::FETCH_ASSOC);
+      return $row["id"];
+    }
+    return false;
   }
 }
 
@@ -695,4 +692,27 @@ Class Role extends PHPHT_Model {
     return $data;
   }
 
+}
+
+Class UserAppId extends PHPHT_Model {
+  function __construct($phpht) {
+    parent::__construct($phpht);
+  }
+
+  public function setUserAppId($userId) {
+    if(!$userId) return false;
+    syslog(LOG_INFO,"Creating appId for userId: $userId");
+    $sql = "INSERT INTO users_appids VALUES (:userId,:appId,:currentDate)";
+    $sqlstmt = $this->phpht->dbPrepare($sql);
+    if($sqlstmt) {
+      $values = [];
+      $values["userId"] = $userId;
+      $values["appId"] = $this->phpht->createAppId(8);
+      $values["currentDate"] = $this->phpht->getDateTime()->format('Y-m-d H:i:s');
+      syslog(LOG_INFO,print_r($values,TRUE));
+      $result = $sqlstmt->execute($values);
+      return $result;
+    }
+    return false;
+  }
 }
