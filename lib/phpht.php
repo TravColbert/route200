@@ -263,11 +263,15 @@ Class PHPHT {
     return $this->$var;
   }
 
-  public function goAuthCheck($userName = 'superuser') {
-    syslog(LOG_INFO,"starting auth-check");
+  public function goInit($matches) {
+    syslog(LOG_INFO,"starting init");
+    if($this->superuserExists()) {
+      syslog(LOG_INFO,"su exists - bailing");
+      return $this->view();
+    }
+    if(!isset($_GET["init"])) return $this->view();
     try {
-      syslog(LOG_INFO,"initial user registered?");
-      $userId = $this->auth->register("su@".$this->appurl,"---","superuser",null);
+      $userId = $this->auth->register("su@".$this->appurl,$_GET["init"],"superuser",null);
       syslog(LOG_INFO,"initial user created");
       $this->auth->admin()->addRoleForUserById($userId,\Delight\Auth\Role::SUPER_ADMIN);
       syslog(LOG_INFO,"roles applied to initial user " . $userId);
@@ -335,12 +339,12 @@ Class PHPHT {
     syslog(LOG_INFO,"attempting to verify registration");
     if(!isset($_GET['selector']) || !isset($_GET['token'])) {
       syslog(LOG_INFO,"Someone tried to verify their email with a missing selector or token");
-      return $this->view();
+      return $this->view("verified.php",["response_code" => 400]);
     }
     try {
       $this->auth->confirmEmail($_GET['selector'], $_GET['token']);
       echo 'Email address has been verified';
-      return $this->redirectTo($this->getConfig("baseurl"));
+      return $this->redirectTo($this->getConfig("baseurl",["response_code" => 200]));
     }
     catch (\Delight\Auth\InvalidSelectorTokenPairException $e) {
       syslog(LOG_INFO,'Invalid token');
@@ -421,6 +425,10 @@ Class PHPHT {
     }
   }
 
+  public function createAppId($length=6) {
+    return \Delight\Auth\Auth::createRandomString($length);
+  }
+
   public function postRegister($matches) {
     syslog(LOG_INFO, "attempting to register user");
     try {
@@ -450,20 +458,28 @@ Class PHPHT {
             ]
           ]
   	    ];
-      $response = $mj->post(\Mailjet\Resources::$Email, ['body' => $body]);
-      //error_log(print_r($response->getData(),TRUE));
-      if($response->success()) {
-        syslog(LOG_INFO,"verification email send success");
-        $data["response_code"] = 201;
-        $data["messages"][] = "User ".$_POST['email']." registered (but not verified)";
-      } else {
-        syslog(LOG_INFO,"failed to send verification email");
-        error_log("failed to send verification email");
-        $data["response_code"] = 409;
-        $data["errors"][] = "failed to register user";  
-      }
-      $this->view("registered.php",$data);
-    });
+      
+        $response = $mj->post(\Mailjet\Resources::$Email, ['body' => $body]);
+        //error_log(print_r($response->getData(),TRUE));
+        if($response->success()) {
+          syslog(LOG_INFO,"verification email send success");
+          $data["response_code"] = 201;
+          $data["messages"][] = "User ".$_POST['email']." registered (but not verified)";
+        } else {
+          syslog(LOG_INFO,"failed to send verification email");
+          error_log("failed to send verification email");
+          $data["response_code"] = 409;
+          $data["errors"][] = "failed to register user";  
+        }
+        $this->view("registered.php",$data);
+      });
+
+      // Set appId for leter reference
+      syslog(LOG_INFO,"New userId registered: $userId");
+      global $userAppIds;
+      $result = $userAppIds->setUserAppId($userId);
+      syslog(LOG_INFO,print_r($result,TRUE));
+
       // Set user_domain mapping
       $dateTime = $this->getDateTime()->format('Y-m-d H:i:s');
       syslog(LOG_INFO,"DateTime is: ".$dateTime);
@@ -572,6 +588,11 @@ Class PHPHT {
     \ini_set('session.cookie_httponly', 1);
     \ini_set('session.cookie_secure', 1);
     return;
+  }
+
+  private function superuserExists() {
+    global $users;
+    return $users->superuserExists();
   }
 
   public function view($template=null,$data=[]) {
