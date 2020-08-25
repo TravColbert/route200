@@ -17,11 +17,11 @@
             <div class="fieldset form-group">
               <div id="ff-username" class="formfield">
                 <label class="form-label" for="username">Email</label>
-                <input type="text" name="username" id="username" class="col-12 noLastPassStyle" data-lpignore="true" placeholder="email" tabindex=0>
+                <input type="text" name="username" id="username" class="col-12 noLastPassStyle" data-lpignore="true" placeholder="email" autocomplete="username" tabindex=0>
               </div>
               <div id="ff-pass" class="formfield">
                 <label class="form-label" for="pass">Passphrase</label>
-                <input type="password" name="pass" id="pass" class="col-12 noLastPassStyle" data-lpignore="true" placeholder="pass phrase" tabindex=0>
+                <input type="password" name="pass" id="pass" class="col-12 noLastPassStyle" data-lpignore="true" placeholder="pass phrase" autocomplete="current-password" tabindex=0>
               </div>
             </div>
           </div>
