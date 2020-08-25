@@ -7,7 +7,7 @@
           <div>It's working!</div>
           <hr/>
         </div>
-        <div class="subblurb">PHPHT is a lean, secure, web app framework using HTMLx, Delight Auth and Mailjet</div>
+        <div class="subblurb">PHPHT is a lean, secure, web app framework using htmx, Delight Auth and Mailjet</div>
         <div id="learnmore">
           <a href="<?php echo $this->getConfig("baseurl") ?>/blog/" class="buttonstyle compact">Learn more</a>
         </div>
