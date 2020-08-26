@@ -18,6 +18,9 @@
 ; URLS : locations of resources
 ; baseurl = "/"
 ;
+; API VERSION : the active API version
+; api_version = ''
+;
 ; DB : the base DB containing user data and possibly models
 ; dbtype = "sqlite"
 ; dblocation = "db/phpht.db"
