@@ -17,11 +17,11 @@
             <div class="fieldset form-group">
               <div id="ff-email" class="formfield">
                 <label class="form-label" for="email">Email</label>
-                <input type="text" name="email" id="email" class="col-12 noLastPassStyle" placeholder="email">
+                <input type="text" name="email" id="email" class="col-12 noLastPassStyle" placeholder="email" autocomplete="username" >
               </div>
               <div id="ff-pass" class="formfield">
                 <label class="form-label" for="pass">Passphrase</label>
-                <input type="password" name="pass" id="pass" class="col-12 noLastPassStyle" placeholder="pass phrase">
+                <input type="password" name="pass" id="pass" class="col-12 noLastPassStyle" placeholder="pass phrase" autocomplete="new-password">
               </div>
             </div>
           </div>
@@ -33,7 +33,7 @@
             </div>
             <div class="fieldset form-group">
               <div class="ff-cancel" class="formfield">
-                <a href="/" type="submit" name="cancel-button" value="Cancel" class="btn btn col-12" tabindex=0>Cancel</a>
+                <a href="<?php echo $this->getConfig("baseurl") ?>/" type="submit" name="cancel-button" value="Cancel" class="btn btn col-12" tabindex=0>Cancel</a>
               </div>
             </div>
           </div>
