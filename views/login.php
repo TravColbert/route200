@@ -33,7 +33,7 @@
             </div>
             <div class="fieldset form-group">
               <div class="ff-cancel" class="formfield">
-                <a href="/" type="submit" name="cancel-button" value="Cancel" class="btn btn col-12" tabindex=0>Cancel</a>
+                <a href="<?php echo $this->getConfig("baseurl") ?>/" type="submit" name="cancel-button" value="Cancel" class="btn btn col-12" tabindex=0>Cancel</a>
               </div>
             </div>
           </div>
