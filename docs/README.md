@@ -3,6 +3,7 @@
 ## Installation
 
  1. Make sure **composer** is installed
+ 1. Make sure you've installed the equivelant of: **sqlite3** and **php-sqlite3** 
  1. Clone to the folder of your choice (e.g. *your_folder_name*)
  1. On the command line run ```composer install```
  1. Copy /config/config.sample to /config/config.ini
