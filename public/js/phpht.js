@@ -1,3 +1,7 @@
+host = "localhost.localhost"
+app = "fever"
+api = "api/v1"
+
 /**
  * SUPPORT FUNCTIONS
  */
@@ -99,7 +103,7 @@ function getJSON(url) {
 function fetchJSON(report, queryString) {
   if(!report) return false
   let qS = (queryString) ? queryString : ``
-  let url = `/${report}/${qS}`
+  let url = `/${app}/${api}/${report}/${qS}`
   // console.log(`Fetching JSON: ${url}`)
   return fetch(url)
   .then(response => {
@@ -362,7 +366,7 @@ if(document.getElementById('domains-create')) {
           </div>
           <form id="domain_create" method="POST" v-bind:action="/domains/">
             <div class="form-group">
-              <label for="name" class="form-label h5">Congregation Name</label>
+              <label for="name" class="form-label h5">Domain Name</label>
               <input type="text" name="name" id="name" v-model="name" class="col-12">
             </div>
             <div class="form-group">
@@ -381,8 +385,10 @@ if(document.getElementById('domains-create')) {
               <i class="icon icon-more-vert"></i>
             </a>
             <ul class="menu">
-              <li>Check out</li>
-              <li>Map</li>
+              <!--
+              <li>Menu 1</li>
+              <li>Menu 2</li>
+              -->
             </ul>
           </div>
         </div>
@@ -463,16 +469,16 @@ if(document.getElementById('users-create')) {
               <input type="password" name="password-confirm" id="password-confirm" v-model="passwordconfirm" class="col-12 noLastPassStyle">
             </div>
             <div class="form-group">
-              <label for="domainid" class="form-label h5">Congregation</label>
+              <label for="domainid" class="form-label h5">Domain</label>
               <select name="domainid" id="domainid" v-model="domain" class="col-12">
-                <option disabled value="">Please select congregation</option>
+                <option disabled value="">Please select domain</option>
                 <option v-for="(domain,index) in domains" :value="domain.id" :key="index">{{domain.name}}</option>
               </select>
             </div>
             <div class="form-group">
               <label for="roleid" class="form-label h5">Role</label>
               <select name="roleid" id="roleid" v-model="role" class="col-12">
-                <option disabled value="">Please select congregation</option>
+                <option disabled value="">Please select role</option>
                 <option v-for="(role,index) in roles" :value="role.id" :key="index">{{role.name}}</option>
               </select>
             </div>
