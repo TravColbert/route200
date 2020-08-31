@@ -137,7 +137,6 @@ Class PHPHT_Model {
 
     if(!isset($matches[2])) {
       $sql = $registryObject[$action][0];
-      // $queryValues["domainId"] = $queryValues["currentDomainId"];
       $queryValues = $this->getQueryValues($queryValues,$registryObject[$action][1]);
     } elseif(isset($matches[2])) {
       syslog(LOG_INFO,"Looking for resource ID: $matches[2]");
@@ -183,7 +182,8 @@ Class PHPHT_Model {
       $className = strtolower(get_class($this));
       $registryObject = $this->getRegistryObject($className);
       if($this->phpht->isAuthorized($this->objectRegistry[$className]["security"][$matches[2]])) {
-        $uiLink = '/' . $this->objectRegistry[$className]["resourceType"] . '/' . $matches[2] . '/'; 
+        $uiLink = $this->phpht->getConfig('baseurl') .'/'. $this->phpht->apiversion .'/'. $this->objectRegistry[$className]["resourceType"] . '/' . $matches[2] . '/'; 
+        syslog(LOG_INFO,"request UI link: ${uiLink}");
         return array("result" => $uiLink,"errors" => []);
       }
     }

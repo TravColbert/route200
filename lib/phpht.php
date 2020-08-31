@@ -18,7 +18,9 @@ Class PHPHT {
     $this->assets = (isset($config["assets"])) ? $config["assets"] : "public";
     $this->home = (isset($config["home"])) ? $config["home"] : "home.php";
     $this->admin = (isset($config["admin"])) ? $config["admin"] : "admin.php";
-    $this->appurl = (isset($config["appurl"])) ? $config["appurl"] : "localhost.localhost";
+    $this->config["appurl"] = (isset($config["appurl"])) ? $config["appurl"] : "localhost.localhost";
+    $this->appurl = $this->config["appurl"];
+    $this->apiversion = (isset($config["apiversion"])) ? $config["apiversion"] : "api/v1";
     $this->config["baseurl"] = (isset($config["baseurl"])) ? $config["baseurl"] : $this->router->getUrlBase();
     if(!isset($this->config["db"]["auth"])) {
       syslog(LOG_INFO,"No pointer to base authentication db provided. Exiting");
@@ -101,6 +103,16 @@ Class PHPHT {
     echo $jsonString;
   }
 
+  public function asHTML($data) {
+    $this->setBaseHeaders();
+    header('Content-Type: text/html; charset=UTF-8');
+    if(!isset($resultArray["errors"])) $resultArray["errors"] = array();
+    if(isset($data["response_code"]) && $data["response_code"]) {
+      http_response_code($data["response_code"]);
+    }
+    syslog(LOG_INFO,$this->toHTML($data));
+  }
+
   public function checkAuth() {
     syslog(LOG_INFO,"checking if user is authenticated...");
     if($this->auth->isLoggedIn()) {
@@ -119,6 +131,10 @@ Class PHPHT {
     global $users;
     syslog(LOG_INFO,"checking if user is in the domain ID: {$targetDomainId}");
     return $users->userInDomainId($this->auth->getUserId(),$targetDomainId);
+  }
+
+  public function createAppId($length=6) {
+    return \Delight\Auth\Auth::createRandomString($length);
   }
 
   public function dbLastInsertId() {
@@ -228,7 +244,8 @@ Class PHPHT {
     if(!isset(${$matches[1]})) return $this->view404();
     $resultArray = ${$matches[1]}->getRead($matches);
     if(isset($resultArray['result'])) syslog(LOG_INFO,"Result count: ".count($resultArray['result']));
-    return $this->asJSON($resultArray);
+    $renderer = $this->setRenderer($matches);
+    return $this->{$renderer}($resultArray);
   }
 
   public function getStaticFile($path) {
@@ -289,13 +306,16 @@ Class PHPHT {
 
   public function goInit($matches) {
     syslog(LOG_INFO,"starting init");
-    if($this->superuserExists()) {
-      syslog(LOG_INFO,"su exists - bailing");
+    if(!isset($_GET["inituser"]) || !isset($_GET["initpass"])) {
+      syslog(LOG_INFO,"incorrect parameters passed to _init - bailing");
       return $this->view();
     }
-    if(!isset($_GET["init"])) return $this->view();
+    if($this->superuserExists()) {
+      syslog(LOG_INFO,"initial user exists - bailing");
+      return $this->view();
+    }
     try {
-      $userId = $this->auth->register("su@".$this->appurl,$_GET["init"],"superuser",null);
+      $userId = $this->auth->register($_GET["inituser"]."@".$this->appurl,$_GET["initpass"],"superuser",null);
       syslog(LOG_INFO,"initial user created");
       $this->auth->admin()->addRoleForUserById($userId,\Delight\Auth\Role::SUPER_ADMIN);
       syslog(LOG_INFO,"roles applied to initial user " . $userId);
@@ -447,10 +467,6 @@ Class PHPHT {
       syslog(LOG_INFO,"too many request");
       return $this->view("login.php",array('errors' => array('Too many requests')));
     }
-  }
-
-  public function createAppId($length=6) {
-    return \Delight\Auth\Auth::createRandomString($length);
   }
 
   public function postRegister($matches) {
@@ -605,6 +621,20 @@ Class PHPHT {
     echo "</div>";
   }
 
+  protected function setRenderer($matches) {
+    switch($matches[count($matches)-1]) {
+      case ".html":
+        syslog(LOG_INFO,"renderer: asHTML");
+        return "asHTML";
+        break;
+      default:
+        syslog(LOG_INFO,"renderer: asJSON");
+        return "asJSON";
+    }
+    syslog(LOG_INFO,"error selecting renderer - defaulting to asJSON");
+    return "asJSON";
+  }
+
   private function setSessionCookieSettings() {
     syslog(LOG_INFO,"Serving secure cookies");
     \ini_set('session.cookie_domain', $this->appurl);
@@ -617,6 +647,24 @@ Class PHPHT {
   private function superuserExists() {
     global $users;
     return $users->superuserExists();
+  }
+
+  public function toHTML($data) {
+    $htmlString = '';
+    for ($i=0; $i < count($data["result"]); $i++) {
+      $htmlString .= "<div hx-target='this' hx-swap='outerHTML'>";
+      foreach ($data["result"][$i] as $key => $value) {
+        syslog(LOG_INFO,$key." ".$value);
+        $htmlString .= "<div><label>$key</label>:$value</div>";
+      }
+      $htmlString .= "<div><button hx-get=\"/".$data["$type"]."/".$data["result"][$i]["id"]."/edit/\" class='btn btn-primary'>Edit</button></div>";
+      $htmlString .= "</div>";
+    }
+    if(count($data["result"])>1) {
+      $htmlString = "<ul>".$htmlString."</ul>";
+    }
+    syslog(LOG_INFO,$htmlString);
+    return $htmlString;
   }
 
   public function view($template=null,$data=[]) {

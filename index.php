@@ -19,7 +19,8 @@ $domains = new Domain($phpht);
 $roles = new Role($phpht);
 $userAppIds = new UserAppId($phpht);
 
-include "includes/includes.php";
+$includedir = (isset($config["includedir"])) ? $config["includedir"] : "/includes";
+if(file_exists(__DIR__ . $includedir . "/includes.php")) include(__DIR__ . $includedir . "/includes.php");
 
 /**
  * == DEFINING ROUTES ==
@@ -70,6 +71,9 @@ include "includes/includes.php";
  * In this case, the first element of the array is an object and the 
  * second element is a method in the object. We often use this format 
  * when using PHPHT's internal methods.
+ *
+ * The following 'standard' routes are version-independant and probably don't
+ * need to change if you change the API.
  */
 $phpht->router->get("/^\\/manifest\.webmanifest$/",array($phpht,"getManifest"));
 $phpht->router->get("/^\\/favicon\.ico$/",array($phpht,"getFavicon"));
@@ -84,32 +88,39 @@ $phpht->router->get("/^\\/(verify)(\\/.+)*\\/?$/",array($phpht,"goVerify"));
 $phpht->router->get("/^\\/settings\\/?$/",array($phpht,"goSettings"));
 $phpht->router->get("/^\\/admin\\/?$/",array($phpht,"goAdmin"));
 $phpht->router->get("/^\\/myusers\\/?$/",array($phpht,"goUsers"));
+$phpht->router->post("/^\\/register\\/?$/",array($phpht,"postRegister"));
+$phpht->router->post("/^\\/login\\/?$/",array($phpht,"postLogin"));
 
 /**
 * Your custom routes go here
 */
-include "routes/routes.php";
+$routedir = (isset($config["routedir"])) ? $config["routedir"] : "/routes";
+if(file_exists(__DIR__ . $routedir ."/routes.php")) include(__DIR__ . $routedir ."/routes.php");
 
 /**
  * These are generic routes that work with basic, non-compound objects
  * As soon as you define them and create the model, they should Just Work
+ *
+ * These calls are version-dependant and may be overridden in your own 
+ * routes.php file. You might, for example, have a 'v2' version of the below 
+ * routes in your routes file.
+ *
+ * These API version routes essentially differentiate between calls for 'pages'
+ * and calls for other resources.
  */
-$phpht->router->get("/^\\/([^\\/]+)\\/(edit)\\/([0-9]+)\\/?/",array($phpht,"getForm"));
-$phpht->router->get("/^\\/([^\\/]+)\\/(create)\\/?/",array($phpht,"getForm"));
-$phpht->router->get("/^\\/([^\\/]+)\\/new\\/?$/","setupNewObject");
-$phpht->router->get("/^\\/([^\\/]+)\\/([0-9]+)\\/edit\\/?$/","toForm");
-$phpht->router->get("/^\\/([^\\/]+)\\/ui\\/([^\\/]+)\\/?$/",array($phpht,"getUIElement"));
-$phpht->router->get("/^\\/([^\\/]+)\\/([0-9]+)\\/?$/",array($phpht,"getRead"));
-$phpht->router->get("/^\\/([^\\/]+)\\/(json)\\/?$/",array($phpht,"getItemsJson"));
-$phpht->router->get("/^\\/([^\\/]+)\\/?$/",array($phpht,"getRead"));
-
-$phpht->router->post("/^\\/register\\/?$/",array($phpht,"postRegister"));
-$phpht->router->post("/^\\/login\\/?$/",array($phpht,"postLogin"));
-$phpht->router->post("/^\\/([^\\/]+)\\/?$/",array($phpht,"postCreate"));
-
-$phpht->router->put("/^\\/([^\\/]+)\\/([0-9]+)\\/?$/",array($phpht,"putEdit"));
-
-$phpht->router->delete("/^\\/([^\\/]+)\\/([0-9]+)\\/?$/",array($phpht,"deleteDelete"));
+$phpht->router->get("/^\\/api\\/v1\\/([^\\/]+)\\/(edit)\\/([0-9]+)\\/?/",array($phpht,"getForm"));
+$phpht->router->get("/^\\/api\\/v1\\/([^\\/]+)\\/(create)\\/?/",array($phpht,"getForm"));
+$phpht->router->get("/^\\/api\\/v1\\/([^\\/]+)\\/new\\/?$/","setupNewObject");
+$phpht->router->get("/^\\/api\\/v1\\/([^\\/]+)\\/([0-9]+)\\/edit\\/?$/","toForm");
+$phpht->router->get("/^\\/api\\/v1\\/([^\\/]+)\\/ui\\/([^\\/]+)\\/?$/",array($phpht,"getUIElement"));
+$phpht->router->get("/^\\/api\\/v1\\/([^\\/]+)\\/([0-9]+)\\/?$/",array($phpht,"getRead"));
+// Regex for catching extensions like '.html'
+// $phpht->router->get("/^\\/api\\/v1\\/([^\\/]+)\\/([0-9]+)(\.[^\\/]+)?\\/?$/",array($phpht,"getRead"));
+// $phpht->router->get("/^\\/([^\\/]+)\\/(json)\\/?$/",array($phpht,"getItemsJson"));
+$phpht->router->get("/^\\/api\\/v1\\/([^\\/]+)\\/?$/",array($phpht,"getRead"));
+$phpht->router->post("/^\\/api\\/v1\\/([^\\/]+)\\/?$/",array($phpht,"postCreate"));
+$phpht->router->put("/^\\/api\\/v1\\/([^\\/]+)\\/([0-9]+)\\/?$/",array($phpht,"putEdit"));
+$phpht->router->delete("/^\\/api\\/v1\\/([^\\/]+)\\/([0-9]+)\\/?$/",array($phpht,"deleteDelete"));
 
 /**
  * THE ROOT ROUTE
