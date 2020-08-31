@@ -43,8 +43,8 @@ Change ```[your_folder_name]``` to the name of your folder - excluding the docum
 server.modules += ( "mod_rewrite" )
 
 url.rewrite-once = (
-                        "^/[your_folder_name]/([^\?]*)$" => "/ta/index.php",
-                        "^/[your_folder_name]/[^?]*(?:(\?)(.*))?$" => "/ta/index.php$1$2"
+   "^/[your_folder_name]/([^\?]*)$" => "/[your_folder_name]/index.php",
+   "^/[your_folder_name]/[^?]*(?:(\?)(.*))?$" => "/[your_folder_name]/index.php$1$2"
  )
 ```
 
