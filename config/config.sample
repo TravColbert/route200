@@ -16,10 +16,13 @@
 ; home = "home.php"
 ;
 ; URLS : locations of resources
+;        appurl - dns FQDN of the host
+; appurl = localhost.localhost
+;        baseurl - the path to the app - not including the document root
 ; baseurl = "/"
 ;
 ; API VERSION : the active API version
-; api_version = ''
+; apiversion = "api/v1"
 ;
 ; DB : the base DB containing user data and possibly models
 ; dbtype = "sqlite"
