@@ -85,7 +85,6 @@ $phpht->router->get("/^\\/settings\\/?$/",array($phpht,"goSettings"));
 $phpht->router->get("/^\\/admin\\/?$/",array($phpht,"goAdmin"));
 $phpht->router->get("/^\\/myusers\\/?$/",array($phpht,"goUsers"));
 
-
 /**
 * Your custom routes go here
 */
