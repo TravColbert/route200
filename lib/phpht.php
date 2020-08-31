@@ -20,12 +20,36 @@ Class PHPHT {
     $this->admin = (isset($config["admin"])) ? $config["admin"] : "admin.php";
     $this->appurl = (isset($config["appurl"])) ? $config["appurl"] : "localhost.localhost";
     $this->config["baseurl"] = (isset($config["baseurl"])) ? $config["baseurl"] : $this->router->getUrlBase();
-    $this->dbtype = (isset($config["dbtype"])) ? $config["dbtype"] : "sqlite";
-    $this->dblocation = (isset($config["dblocation"])) ? $config["dblocation"] : "db/phpht.db";
-    $this->db = new \PDO($this->dbtype.":".$this->dblocation);
-    if($this->db) {
-      $this->auth = new \Delight\Auth\Auth($this->db);
+    if(!isset($this->config["db"]["auth"])) {
+      syslog(LOG_INFO,"No pointer to base authentication db provided. Exiting");
+      exit();
     }
+    if(!file_exists($this->config["db"]["auth"])) {
+      syslog(LOG_INFO,"Base authentication config does not exist. Exiting");
+      exit();
+    }
+    $auth_dbconfig = (file_exists($this->config["db"]["auth"])) ? parse_ini_file($this->config["db"]["auth"]) : null;
+
+    $this->auth_dbtype = (isset($auth_dbconfig["dbtype"])) ? $auth_dbconfig["dbtype"] : "sqlite";
+    if($this->auth_dbtype!="sqlite") {
+      $this->auth_dbhost = (isset($auth_dbconfig["dbhost"])) ? $auth_dbconfig["dbhost"] : "localhost.localhost";
+      $this->auth_dbuser = (isset($auth_dbconfig["dbuser"])) ? $auth_dbconfig["dbuser"] : "phphtdbuser";
+      $this->auth_dbpass = (isset($auth_dbconfig["dbpass"])) ? $auth_dbconfig["dbpass"] : "phphtdbpass";
+    }
+    $this->auth_dblocation = (isset($auth_dbconfig["dblocation"])) ? $auth_dbconfig["dblocation"] : "db/phpht.db";
+    if($this->auth_dbtype=="sqlite") {
+      $this->auth_db = new \PDO($this->auth_dbtype.":".$this->auth_dblocation);
+    } else {
+      $this->auth_db = new \PDO($this->auth_dbtype.":host=".$this->auth_dbhost.";dbname=".$this->auth_dblocation,$this->auth_dbuser,$this->auth_dbpass);
+    }
+    if($this->auth_db) {
+      $this->auth = new \Delight\Auth\Auth($this->auth_db);
+    }
+
+    // $this->db = new \PDO($this->dbtype.":".$this->dblocation);
+    // if($this->db) {
+    //   $this->auth = new \Delight\Auth\Auth($this->db);
+    // }
     $this->manifest = array(
       "short_name" => "PHPHT PWA",
       "name" => "PHPHT Progressive Web Application Demo",
