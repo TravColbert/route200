@@ -1,6 +1,3 @@
 {
-    "require": {
-        "delight-im/auth": "^8.1",
-        "mailjet/mailjet-apiv3-php": "^1.4"
-    }
+    "require": {}
 }
