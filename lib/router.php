@@ -10,20 +10,13 @@
 Class Router {
   private $my_name = "Router";
   private $urlBase;
-  private $routes;
-  protected $phpht;
+  private $routes = [];
+  public $output = '';
 
-  function __construct($urlBase=null,$phpht) {
+  function __construct($urlBase=null) {
     syslog(LOG_INFO,$this->my_name.": Starting new router at URL base: '{$urlBase}'");
-    $this->phpht = $phpht;
-    if($urlBase===null){
-      $basedir = dirname($_SERVER['SCRIPT_NAME']);
-      $this->urlBase = ($basedir==='/') ? '' : $basedir;
-    } else {
-      $this->urlBase = $urlBase;
-    }
-    syslog(LOG_INFO,$this->my_name.": Final PHPHT Router URL base: '{$this->urlBase}'");
-    $this->routes = array();
+    $this->urlBase = $urlBase ?? $this->getBaseDir();
+    syslog(LOG_INFO,$this->my_name.": Final router URL base: '{$this->urlBase}'");
   }
 
   public function showRoutes() {
@@ -32,8 +25,31 @@ Class Router {
     }
   }
 
+  private function getBaseDir() {
+    return (dirname($_SERVER['SCRIPT_NAME'])!=='/') ? dirname($_SERVER['SCRIPT_NAME']) : '';
+  }
+
   public function getUrlBase() {
     return $this->urlBase;
+  }
+
+  private function executeRoutes($routes,$path) {
+    foreach($routes as $r) {
+      for($count=1;$count<count($r[1]);$count++) {
+        preg_match($r[0],$path,$matches);
+        $func = array($r[1][0],$r[1][$count]);
+        $func($matches);
+      }
+    }
+  }
+
+  protected function matchRoutes($verb,$path) {
+    syslog(LOG_INFO,"matching path: $path");
+    if(!array_key_exists($verb,$this->routes)) return false;
+    $eligibleRoutes = array_filter($this->routes[$verb],function($route) use ($path) {
+      return preg_match($route[0],$path,$matches);
+    });
+    return $eligibleRoutes;
   }
 
   public function getRoutes() {
@@ -41,7 +57,7 @@ Class Router {
   }
 
   public function route() {
-    $verb = $_SERVER['REQUEST_METHOD'];
+    $verb = strtoupper($_SERVER['REQUEST_METHOD']);
     $path = $_SERVER['REQUEST_URI'];
     syslog(LOG_INFO,$this->my_name.": REQUEST_METHOD: ".$verb);
     syslog(LOG_INFO,$this->my_name.": REQUEST_URI: ".$path);
@@ -50,18 +66,8 @@ Class Router {
       if(strpos($path,$this->urlBase)==0) $path = substr($path,strlen($this->urlBase));
     }
     syslog(LOG_INFO,"Resulting path: $path");
-    $verb = strtoupper($verb);
-    if(array_key_exists($verb,$this->routes)) {
-      foreach($this->routes[$verb] as $route) {
-        $isMatched = preg_match($route[0],$path,$matches);
-        if($isMatched) {
-          syslog(LOG_INFO,"Found a match: ".$matches[0]." (".$route[0].")");
-          return $route[1]($matches);
-        }
-      }
-    }
-    syslog(LOG_INFO,$this->my_name.": Could not find route for {$verb} {$path}");
-    return $this->phpht->view404($path);
+    $routeList = $this->matchRoutes($verb,$path);
+    $this->executeRoutes($routeList,$path);
   }
 
   public function registerRoute($verb,$pattern,$callback) {
