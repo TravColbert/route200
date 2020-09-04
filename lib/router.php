@@ -1,28 +1,20 @@
 <?php
 /**
- * Router101
+ * Route200
  * 
  * A simple route-handler for PHP
  * 
- * @package   router101
+ * @package   route200
  * @author    Trav Colbert <trav.colbert@gmail.com>
  */
 Class Router {
-  private $my_name = "Router";
+  private $my_name = "Route200";
   private $urlBase;
   private $routes = [];
-  public $output = '';
 
   function __construct($urlBase=null) {
-    syslog(LOG_INFO,$this->my_name.": Starting new router at URL base: '{$urlBase}'");
     $this->urlBase = $urlBase ?? $this->getBaseDir();
-    syslog(LOG_INFO,$this->my_name.": Final router URL base: '{$this->urlBase}'");
-  }
-
-  public function showRoutes() {
-    foreach($this->routes["GET"] as $route) {
-      echo $route[0]."<br>\n";
-    }
+    syslog(LOG_INFO,"Final router URL base: '{$this->urlBase}'");
   }
 
   private function getBaseDir() {
@@ -37,18 +29,23 @@ Class Router {
     foreach($routes as $r) {
       for($count=1;$count<count($r[1]);$count++) {
         preg_match($r[0],$path,$matches);
-        $func = array($r[1][0],$r[1][$count]);
-        $func($matches);
+        syslog(LOG_INFO,"Invoking route handler: " . $r[1][$count]);
+        $result = array($r[1][0],$r[1][$count])($matches);
+        if(!$result) {
+          syslog(LOG_INFO,"Middleware in chain has failed. Breaking chain");
+          break;
+        }
       }
     }
   }
 
   protected function matchRoutes($verb,$path) {
-    syslog(LOG_INFO,"matching path: $path");
+    syslog(LOG_INFO,"Compiling eligible routes for " . $verb . " " . $path);
     if(!array_key_exists($verb,$this->routes)) return false;
     $eligibleRoutes = array_filter($this->routes[$verb],function($route) use ($path) {
       return preg_match($route[0],$path,$matches);
     });
+    syslog(LOG_INFO,"Found " . count($eligibleRoutes) . " eligible routes");
     return $eligibleRoutes;
   }
 
@@ -59,14 +56,13 @@ Class Router {
   public function route() {
     $verb = strtoupper($_SERVER['REQUEST_METHOD']);
     $path = $_SERVER['REQUEST_URI'];
-    syslog(LOG_INFO,$this->my_name.": REQUEST_METHOD: ".$verb);
-    syslog(LOG_INFO,$this->my_name.": REQUEST_URI: ".$path);
-    syslog(LOG_INFO,$this->my_name.": QUERY_STRING: " . $_SERVER['QUERY_STRING']);
-    if(strlen($this->urlBase)>0) {
-      if(strpos($path,$this->urlBase)==0) $path = substr($path,strlen($this->urlBase));
-    }
+    syslog(LOG_INFO,"REQUEST_METHOD: " . $verb);
+    syslog(LOG_INFO,"REQUEST_URI: " . $path);
+    syslog(LOG_INFO,"QUERY_STRING: " . $_SERVER['QUERY_STRING']);
+    if(strpos($path,$this->urlBase)==0) $path = substr($path,strlen($this->urlBase));
     syslog(LOG_INFO,"Resulting path: $path");
     $routeList = $this->matchRoutes($verb,$path);
+    if(!count($routeList)) $routeList = $this->matchRoutes("ERR",$path);
     $this->executeRoutes($routeList,$path);
   }
 
@@ -98,6 +94,10 @@ Class Router {
     $this->registerRoute("PUT",$pattern,$callback);
   }
 
+  public function err($callback) {
+    $this->registerRoute("ERR","/.*/",$callback);
+  }
+
   /**
    * sets the asset folder for static content.
    * Also, sets the Content-Type header for the resulting content 
@@ -106,7 +106,7 @@ Class Router {
    * @access  public
    */
   public function assets($path="public") {
-    syslog(LOG_INFO,$this->my_name.": Setting assets path to: {$path}");
+    syslog(LOG_INFO,"Setting assets path to: {$path}");
     $regex = '/^\\/('.$path.')\\/(.*)/';
     $this->registerRoute("GET",$regex,function($matches) {
       $this->phpht->setContentType($matches);
