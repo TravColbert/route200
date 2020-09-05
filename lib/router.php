@@ -14,7 +14,7 @@ Class Router {
 
   function __construct($urlBase=null) {
     $this->urlBase = $urlBase ?? $this->getBaseDir();
-    syslog(LOG_INFO,"Final router URL base: '{$this->urlBase}'");
+    syslog(LOG_INFO,"Router URL base: '{$this->urlBase}'");
   }
 
   private function getBaseDir() {
@@ -27,12 +27,12 @@ Class Router {
 
   private function executeRoutes($routes,$path) {
     foreach($routes as $r) {
+      preg_match($r[0],$path,$matches);
       for($count=1;$count<count($r[1]);$count++) {
-        preg_match($r[0],$path,$matches);
-        syslog(LOG_INFO,"Invoking route handler: " . $r[1][$count]);
+        syslog(LOG_INFO,"Invoking middleware: " . $r[1][$count]);
         $result = array($r[1][0],$r[1][$count])($matches);
         if(!$result) {
-          syslog(LOG_INFO,"Middleware in chain has failed. Breaking chain");
+          syslog(LOG_INFO,"Middleware " . $r[1][$count] . " failed. Breaking chain");
           break;
         }
       }
@@ -49,20 +49,35 @@ Class Router {
     return $eligibleRoutes;
   }
 
+  private function getQueryString() {
+    $queryString = $_SERVER['QUERY_STRING'];
+    syslog(LOG_INFO,"QUERY_STRING: " . $queryString);
+    return $queryString;
+  }
+
+  private function getRequestUri() {
+    $path = $_SERVER['REQUEST_URI'];
+    if(strpos($path,$this->urlBase)==0) $path = substr($path,strlen($this->urlBase));
+    syslog(LOG_INFO,"REQUEST_URI: " . $path);
+    return $path;
+  }
+
   public function getRoutes() {
     return $this->routes;
   }
 
-  public function route() {
+  private function getVerb() {
     $verb = strtoupper($_SERVER['REQUEST_METHOD']);
-    $path = $_SERVER['REQUEST_URI'];
     syslog(LOG_INFO,"REQUEST_METHOD: " . $verb);
-    syslog(LOG_INFO,"REQUEST_URI: " . $path);
-    syslog(LOG_INFO,"QUERY_STRING: " . $_SERVER['QUERY_STRING']);
-    if(strpos($path,$this->urlBase)==0) $path = substr($path,strlen($this->urlBase));
-    syslog(LOG_INFO,"Resulting path: $path");
+    return $verb;
+  }
+
+  public function route() {
+    $verb = $this->getVerb();
+    $path = $this->getRequestUri();
+    $queryString = $this->getQueryString();
     $routeList = $this->matchRoutes($verb,$path);
-    if(!count($routeList)) $routeList = $this->matchRoutes("ERR",$path);
+    if(!count($routeList)) $routeList = $this->matchRoutes("404",$path);
     $this->executeRoutes($routeList,$path);
   }
 
@@ -92,6 +107,10 @@ Class Router {
 
   public function put($pattern,$callback) {
     $this->registerRoute("PUT",$pattern,$callback);
+  }
+
+  public function not_found($callback) {
+    $this->registerRoute("404","/.*/",$callback);
   }
 
   public function err($callback) {
