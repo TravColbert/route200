@@ -1,23 +1,26 @@
 <?php
 $config = (file_exists("./config/config.ini")) ? parse_ini_file("./config/config.ini") : null;
-openlog((isset($config["appname"])) ? $config["appname"] : "phpht", LOG_PID, LOG_SYSLOG);
+openlog((isset($config["appname"])) ? $config["appname"] : "R-200", LOG_PID, LOG_SYSLOG);
 
 $vendor = (isset($config["vendor"])) ? $config["vendor"] : "/vendor";
 require __DIR__ . $vendor . '/autoload.php';
 
 $libdir = (isset($config["libdir"])) ? $config["libdir"] : "/lib";
-require_once(__DIR__ . $libdir . "/phpht.php");
-$phpht = new PHPHT($config);
+require_once(__DIR__ . $libdir . "/router.php");
+$router = new Router();
+
+// require_once(__DIR__ . $libdir . "/phpht.php");
+// $phpht = new PHPHT($config);
 
 // Setup what folder your static assets are pulled from (e.g. 'public')
-$phpht->router->assets();
+// $phpht->router->assets();
 
-require_once(__DIR__ . $libdir . "/phpht_model.php");
+// require_once(__DIR__ . $libdir . "/phpht_model.php");
 
-$users = new User($phpht);
-$domains = new Domain($phpht);
-$roles = new Role($phpht);
-$userAppIds = new UserAppId($phpht);
+// $users = new User($phpht);
+// $domains = new Domain($phpht);
+// $roles = new Role($phpht);
+// $userAppIds = new UserAppId($phpht);
 
 $includedir = (isset($config["includedir"])) ? $config["includedir"] : "/includes";
 if(file_exists(__DIR__ . $includedir . "/includes.php")) include(__DIR__ . $includedir . "/includes.php");
@@ -75,21 +78,21 @@ if(file_exists(__DIR__ . $includedir . "/includes.php")) include(__DIR__ . $incl
  * The following 'standard' routes are version-independant and probably don't
  * need to change if you change the API.
  */
-$phpht->router->get("/^\\/manifest\.webmanifest$/",array($phpht,"getManifest"));
-$phpht->router->get("/^\\/favicon\.ico$/",array($phpht,"getFavicon"));
-$phpht->router->get("/^\\/_info\\/?$/",array($phpht,"viewInfo"));
-$phpht->router->get("/^\\/(_init)(\\/.+)*\\/?$/",array($phpht,"goInit"));
-$phpht->router->get("/^\\/(_diag)(\\/.+)*\\/?$/",array($phpht,"getDiag"));
-$phpht->router->get("/^\\/404\\/?$/",array($phpht,"view404"));
-$phpht->router->get("/^\\/login\\/?$/",array($phpht,"goLogin"));
-$phpht->router->get("/^\\/logout\\/?$/",array($phpht,"goLogout"));
-$phpht->router->get("/^\\/register\\/?$/",array($phpht,"viewRegister"));
-$phpht->router->get("/^\\/(verify)(\\/.+)*\\/?$/",array($phpht,"goVerify"));
-$phpht->router->get("/^\\/settings\\/?$/",array($phpht,"goSettings"));
-$phpht->router->get("/^\\/admin\\/?$/",array($phpht,"goAdmin"));
-$phpht->router->get("/^\\/myusers\\/?$/",array($phpht,"goUsers"));
-$phpht->router->post("/^\\/register\\/?$/",array($phpht,"postRegister"));
-$phpht->router->post("/^\\/login\\/?$/",array($phpht,"postLogin"));
+// $router->get("/^\\/manifest\.webmanifest$/",array($phpht,"getManifest"));
+// $router->get("/^\\/favicon\.ico$/",array($phpht,"getFavicon"));
+// $router->get("/^\\/_info\\/?$/",array($phpht,"viewInfo"));
+// $router->get("/^\\/(_init)(\\/.+)*\\/?$/",array($phpht,"goInit"));
+// $router->get("/^\\/(_diag)(\\/.+)*\\/?$/",array($phpht,"getDiag"));
+$router->get("/^\\/404\\/?$/",array($app,"renderHead","render404","renderFoot"));
+// $router->get("/^\\/login\\/?$/",array($phpht,"goLogin"));
+// $router->get("/^\\/logout\\/?$/",array($phpht,"goLogout"));
+// $router->get("/^\\/register\\/?$/",array($phpht,"viewRegister"));
+// $router->get("/^\\/(verify)(\\/.+)*\\/?$/",array($phpht,"goVerify"));
+// $router->get("/^\\/settings\\/?$/",array($phpht,"goSettings"));
+// $router->get("/^\\/admin\\/?$/",array($phpht,"goAdmin"));
+// $router->get("/^\\/myusers\\/?$/",array($phpht,"goUsers"));
+// $router->post("/^\\/register\\/?$/",array($phpht,"postRegister"));
+// $router->post("/^\\/login\\/?$/",array($phpht,"postLogin"));
 
 /**
 * Your custom routes go here
@@ -108,30 +111,34 @@ if(file_exists(__DIR__ . $routedir ."/routes.php")) include(__DIR__ . $routedir 
  * These API version routes essentially differentiate between calls for 'pages'
  * and calls for other resources.
  */
-$phpht->router->get("/^\\/api\\/v1\\/([^\\/]+)\\/(edit)\\/([0-9]+)\\/?/",array($phpht,"getForm"));
-$phpht->router->get("/^\\/api\\/v1\\/([^\\/]+)\\/(create)\\/?/",array($phpht,"getForm"));
-$phpht->router->get("/^\\/api\\/v1\\/([^\\/]+)\\/new\\/?$/","setupNewObject");
-$phpht->router->get("/^\\/api\\/v1\\/([^\\/]+)\\/([0-9]+)\\/edit\\/?$/","toForm");
-$phpht->router->get("/^\\/api\\/v1\\/([^\\/]+)\\/ui\\/([^\\/]+)\\/?$/",array($phpht,"getUIElement"));
-$phpht->router->get("/^\\/api\\/v1\\/([^\\/]+)\\/([0-9]+)\\/?$/",array($phpht,"getRead"));
-// Regex for catching extensions like '.html'
-// $phpht->router->get("/^\\/api\\/v1\\/([^\\/]+)\\/([0-9]+)(\.[^\\/]+)?\\/?$/",array($phpht,"getRead"));
-// $phpht->router->get("/^\\/([^\\/]+)\\/(json)\\/?$/",array($phpht,"getItemsJson"));
-$phpht->router->get("/^\\/api\\/v1\\/([^\\/]+)\\/?$/",array($phpht,"getRead"));
-$phpht->router->post("/^\\/api\\/v1\\/([^\\/]+)\\/?$/",array($phpht,"postCreate"));
-$phpht->router->put("/^\\/api\\/v1\\/([^\\/]+)\\/([0-9]+)\\/?$/",array($phpht,"putEdit"));
-$phpht->router->delete("/^\\/api\\/v1\\/([^\\/]+)\\/([0-9]+)\\/?$/",array($phpht,"deleteDelete"));
+// $router->get("/^\\/api\\/v1\\/([^\\/]+)\\/(edit)\\/([0-9]+)\\/?/",array($phpht,"getForm"));
+// $router->get("/^\\/api\\/v1\\/([^\\/]+)\\/(create)\\/?/",array($phpht,"getForm"));
+// $router->get("/^\\/api\\/v1\\/([^\\/]+)\\/new\\/?$/","setupNewObject");
+// $router->get("/^\\/api\\/v1\\/([^\\/]+)\\/([0-9]+)\\/edit\\/?$/","toForm");
+// $router->get("/^\\/api\\/v1\\/([^\\/]+)\\/ui\\/([^\\/]+)\\/?$/",array($phpht,"getUIElement"));
+// $router->get("/^\\/api\\/v1\\/([^\\/]+)\\/([0-9]+)\\/?$/",array($phpht,"getRead"));
+// $router->get("/^\\/api\\/v1\\/([^\\/]+)\\/?$/",array($phpht,"getRead"));
+// $router->post("/^\\/api\\/v1\\/([^\\/]+)\\/?$/",array($phpht,"postCreate"));
+// $router->put("/^\\/api\\/v1\\/([^\\/]+)\\/([0-9]+)\\/?$/",array($phpht,"putEdit"));
+// $router->delete("/^\\/api\\/v1\\/([^\\/]+)\\/([0-9]+)\\/?$/",array($phpht,"deleteDelete"));
 
 /**
  * THE ROOT ROUTE
  * 
  * This defines the root route: the front door to your app.
  */
-$phpht->router->get("/^\\/?$/",function($matches) use ($phpht) {
-  $phpht->view($phpht->getVal("home"),$matches);
-});
+$router->get("/^\\/?$/",array($app,"renderHead","renderHome","renderFoot"));
+
+/**
+ * THE 404 ROUTE
+ */
+$router->not_found(array($app,"renderHead","render404","renderFoot"));
+
+/**
+ * ERROR ROUTES
+ */
 
 /**
  * Find and run the route!
  */
-$phpht->router->route();
+$router->route();
