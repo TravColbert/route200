@@ -53,7 +53,7 @@ Class Router {
   private function getRequestUri() {
     $path = $_SERVER['REQUEST_URI'];
     syslog(LOG_ERR,"this->urlBase: '{$this->urlBase}'");
-    if($this->urlBase && strpos($path,$this->urlBase)==0) $path = substr($path,strlen($this->urlBase));
+    if($this->urlBase && strpos($path,$this->urlBase)===0) $path = substr($path,strlen($this->urlBase));
     syslog(LOG_INFO,"REQUEST_URI: " . $path);
     return $path;
   }
