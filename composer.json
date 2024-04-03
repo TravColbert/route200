@@ -2,6 +2,7 @@
     "name": "phpht/route-200",
     "description": "A simple PHP router",
     "require": {
-        "php": ">=8.2"
-    }
+        "php": ">=8.0"
+    },
+    "license": "MIT"
 }
