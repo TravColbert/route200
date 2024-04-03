@@ -1,7 +1,6 @@
 {
     "name": "phpht/route-200",
     "description": "A simple PHP router",
-    "version": "0.1.1",
     "require": {
         "php": ">=8.0"
     },
